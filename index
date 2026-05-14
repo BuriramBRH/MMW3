@@ -1,0 +1,1706 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>CloudWard - ระบบบริหารจัดการหอผู้ป่วยอัจฉริยะ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <!-- Jquery.Thailand.js & Notyf CSS -->
+  <link rel="stylesheet" href="https://earthchie.github.io/jquery.Thailand.js/jquery.Thailand.js/dist/jquery.Thailand.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+
+  <!-- Core Scripts (No SweetAlert2) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+  <!-- Jquery.Thailand.js Dependencies -->
+  <script src="https://earthchie.github.io/jquery.Thailand.js/jquery.Thailand.js/dependencies/JQL.min.js"></script>
+  <script src="https://earthchie.github.io/jquery.Thailand.js/jquery.Thailand.js/dependencies/typeahead.bundle.js"></script>
+  <script src="https://earthchie.github.io/jquery.Thailand.js/jquery.Thailand.js/dist/jquery.Thailand.min.js"></script>
+
+  <style>
+
+    * { font-family: 'Sarabun', sans-serif !important; }
+    body { background: #f4f7f6; color: #263238; }
+    .card { border: 0; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+    .top-title { font-weight: 900; letter-spacing: 0.2px; }
+    .chip { padding: 6px 10px; border-radius: 999px; font-size: 12px; }
+    .mini { background: #f8f9fa; border-radius: 14px; padding: 10px; }
+    .mini .label { font-size: 12px; color: #6c757d; }
+    .mini .value { font-size: 28px; font-weight: 900; margin: 0; }
+    .section-title { font-weight: 900; }
+    .subtle { color: #6c757d; font-size: 12px; }
+    .bg-grad { background: linear-gradient(135deg, #0d6efd, #00bcd4); color: white; }
+    .sticky-actions { position: sticky; bottom: 12px; z-index: 2; }
+    .badge { font-size:13px; padding:6px 10px; border-radius:8px; font-weight:800; letter-spacing:.2px; }
+    .btn-modern { width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:12px; border:none; background:#f1f5f9; color:#64748b; transition:all 0.2s; font-size:16px; }
+    .btn-modern:hover { transform:translateY(-2px); background:#e2e8f0; }
+    .btn-modern.edit:hover { background:#dbeafe; color:#2563eb; }
+    .btn-modern.dis:hover { background:#fef3c7; color:#d97706; }
+
+    /* ── Login Overlay ── */
+    #loginOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    .login-card { width: 100%; max-width: 400px; background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+
+    /* ── Custom Fullscreen Loader ── */
+    #appLoader { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); z-index: 99999; flex-direction: column; justify-content: center; align-items: center; }
+    .spinner-glow { width: 4rem; height: 4rem; border-radius: 50%; border: 4px solid #e2e8f0; border-top-color: #0d6efd; animation: spin 1s linear infinite; box-shadow: 0 0 20px rgba(13, 110, 253, 0.4); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { margin-top: 20px; font-weight: 800; font-size: 16px; color: #0f172a; letter-spacing: 0.5px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+    /* ── Custom App Modal (Replacing SweetAlert) ── */
+    .app-modal-icon { font-size: 3.5rem; line-height: 1; margin-bottom: 15px; }
+
+    /* ── Year Selector ── */
+    .year-selector-wrap { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:4px 12px 4px 8px; }
+    .year-selector-wrap label { color:#fff; font-size:11px; font-weight:800; opacity:.85; white-space:nowrap; margin:0; }
+    .year-selector-wrap select { background:transparent; border:none; color:#fff; font-size:13px; font-weight:800; outline:none; cursor:pointer; padding:2px 4px; }
+    .year-selector-wrap select option { background:#1e293b; color:#fff; }
+
+    /* ── Dx Tag Input ── */
+    .dx-tagbox { min-height:42px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:6px 10px; border:1px solid rgba(0,0,0,.12); border-radius:12px; background:#fff; }
+    .dx-tagbox:focus-within { border-color:#0d6efd; box-shadow:0 0 0 .2rem rgba(13,110,253,.15); }
+    .dx-tag { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.10); background:#f8f9fa; font-size:12px; font-weight:800; color:#263238; }
+    .dx-tag.primary { background:rgba(13,110,253,.10); border-color:rgba(13,110,253,.35); }
+    .dx-tag .x { cursor:pointer; font-weight:900; opacity:.65; }
+    .dx-tag .x:hover { opacity:1; }
+    .dx-taginput { border:0; outline:none; min-width:180px; flex:1; padding:6px 4px; font-size:14px; background:transparent; }
+    .dx-suggest { position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:10; background:#fff; border:1px solid rgba(0,0,0,.12); border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,.10); }
+    .dx-suggest .item { padding:10px 12px; cursor:pointer; font-size:13px; }
+    .dx-suggest .item:hover, .dx-suggest .item.active { background:#f1f5ff; }
+    .dx-suggest .muted { color:#6c757d; font-size:12px; }
+
+    /* ── Table UX ── */
+    .table-wrap { overflow:auto; border-radius:14px; }
+    .row-clickable { cursor:pointer; }
+    .row-longstay { background:rgba(220,53,69,.07) !important; }
+    .row-longstay:hover { background:rgba(220,53,69,.10) !important; }
+    .filters-bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin:8px 0 12px 0; }
+    .filters-left { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .filters-right { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .seg-btn { border:1px solid rgba(0,0,0,.12); background:#fff; color:#263238; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:800; }
+    .seg-btn.active { background:#0d6efd; border-color:#0d6efd; color:#fff; }
+    .seg-btn.seg-danger.active { background:#dc3545; border-color:#dc3545; color:#fff; }
+
+    /* ── Report Pro UI ── */
+    .kpi-card { background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:14px; height:100%; }
+    .kpi-label { color:#6c757d; font-size:12px; }
+    .kpi-value { font-size:30px; font-weight:900; line-height:1.1; margin-top:4px; }
+    .report-block { background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:14px; padding:14px; }
+    .fw-black { font-weight:900; }
+
+    /* ── Nurse ID chip ── */
+    .nurse-chip { display:flex; gap:8px; align-items:center; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.22); padding:6px 10px; border-radius:999px; color:#fff; font-size:12px; font-weight:800; cursor: pointer; transition: all 0.2s; }
+    .nurse-chip:hover { background:rgba(255,255,255,.25); }
+    .nurse-chip .muted { opacity:1; font-weight:700; color: #ffeb3b; }
+
+    /* ── Cross Year Report ── */
+    .cross-year-bar { display:flex; align-items:center; gap:6px; }
+    .year-badge { padding:3px 10px; border-radius:999px; font-size:11px; font-weight:800; border:1px solid; }
+
+    /* ── QA Card v3 & Accordion ── */
+    .qa-summary-box { background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.03); transition: transform 0.2s; height: 100%; }
+    .qa-summary-box:hover { transform: translateY(-2px); }
+    .qa-summary-label { font-size: 11px; color: #64748b; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .qa-summary-val { font-size: 22px; font-weight: 900; line-height: 1.1; }
+    .qa-summary-val.danger { color: #dc2626; }
+    .qa-summary-val.warning { color: #d97706; }
+    .qa-summary-val.success { color: #059669; }
+    .qa-accordion .accordion-item { border: 1px solid rgba(0,0,0,.08); border-radius: 14px !important; margin-bottom: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.02); border-left: 4px solid #0d6efd; }
+    .qa-accordion .accordion-button { font-family: 'Sarabun', sans-serif; font-weight: 800; font-size: 14.5px; color: #1e293b; padding: 14px 20px; background: #fff; box-shadow: none !important; }
+    .qa-accordion .accordion-button:not(.collapsed) { background: #f8fafc; color: #0d6efd; border-bottom: 1px solid rgba(0,0,0,.05); }
+    .qa-accordion .accordion-body { padding: 16px 20px; background: #fff; }
+    .qa-status-inline { display: inline-flex; padding: 6px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .qc-pill { display:inline-flex; align-items:center; gap:3px; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:800; }
+    .qc-stat { text-align:center; padding:5px 8px; background:#f8fafc; border-radius:10px; min-width:52px; }
+    .qc-stat .qc-stat-label { font-size:10px; color:#64748b; font-weight:700; }
+    .qc-stat .qc-stat-val { font-size:17px; font-weight:900; line-height:1.2; }
+    .qc-divider { font-size:10px; font-weight:900; letter-spacing:.5px; color:#94a3b8; padding:8px 0 3px; border-bottom:1px solid rgba(15,23,42,.05); text-transform:uppercase; }
+    .qc-inc-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:4px; }
+    .qc-inc-table th { text-align:left; padding:4px 6px; font-weight:800; color:#94a3b8; font-size:11px; border-bottom:2px solid rgba(0,0,0,.04); }
+    .qc-inc-table td { padding:5px 6px; border-bottom:1px solid rgba(0,0,0,.03); }
+    .qc-inc-table .qc-g { display:inline-block; width:22px; height:22px; border-radius:7px; font-weight:900; line-height:22px; font-size:12px; text-align:center; }
+    .qc-empty { font-size:12px; color:#94a3b8; padding:10px 0; text-align:center; font-style:italic; }
+    .qc-add-btn { margin-top:8px; width:100%; padding:8px; border-radius:10px; border:1.5px dashed rgba(148,163,184,.4); background:transparent; color:#94a3b8; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; transition:all .2s; }
+    .qc-add-btn:hover { border-color:#2563eb; color:#2563eb; background:rgba(37,99,235,.04); }
+    .qc-add-btn.open { border:1.5px solid rgba(37,99,235,.3); background:rgba(219,234,254,.5); color:#2563eb; }
+    .qc-inline-form { background:#f8fafc; border-radius:12px; padding:12px; margin-top:8px; border:1.5px dashed rgba(37,99,235,.3); }
+    .qc-inline-form select,.qc-inline-form input { padding:7px 10px; border:1.5px solid rgba(15,23,42,.06); border-radius:9px; font-size:12px; font-weight:700; }
+    .qc-inline-form .grade-btn { flex:1; padding:6px 0; border-radius:8px; border:1.5px solid rgba(15,23,42,.06); background:#fff; font-weight:900; font-size:13px; cursor:pointer; }
+    .qc-inline-form .grade-btn.sel { border-color:#2563eb; background:#dbeafe; }
+    .qc-phl-bar { display:flex; height:26px; border-radius:999px; overflow:hidden; background:#f1f5f9; margin-bottom:8px; }
+    .qc-phl-seg { display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; min-width:26px; transition:width .4s; }
+    .gauge-wrap { text-align:center; width:100px; height:85px; }
+    .gauge-label { font-size:10px; font-weight:800; color:#64748b; margin-top:-6px; }
+    .qa-tab-btn { border:none; background:transparent; padding:8px 14px; border-radius:999px; font-size:12px; font-weight:800; color:#6c757d; transition:all .2s; cursor:pointer; }
+    .qa-tab-btn.active { background:#0d6efd; color:#fff; box-shadow:0 2px 8px rgba(13,110,253,.3); }
+
+    .tt-menu { background-color: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 5px 10px rgba(0,0,0,.2); z-index: 1050; padding: 4px 0; }
+    .tt-suggestion { padding: 4px 10px; font-size: 13px; cursor: pointer; }
+    .tt-suggestion:hover { background-color: #f1f5f9; color: #0d6efd; }
+    /* ── Audit Diff UI ── */
+    .diff-table th { background: #f8fafc; font-size: 13px; color: #475569; font-weight: 800; border-bottom: 2px solid #e2e8f0; }
+    .diff-table td { font-size: 13.5px; vertical-align: middle; }
+    .diff-from { color: #dc2626; background: #fef2f2; text-decoration: line-through; padding: 2px 8px; border-radius: 6px; display: inline-block; font-size: 12px; font-weight: 600; }
+    .diff-to { color: #059669; background: #ecfdf5; padding: 2px 8px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 800; }
+    .audit-meta-box { background: #f1f5f9; padding: 12px 16px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; border: 1px solid #e2e8f0; }
+    .actor-clickable { cursor: pointer; transition: all 0.2s; border: 1px solid rgba(0,0,0,0.1) !important; }
+    .actor-clickable:hover { background: #0d6efd !important; color: #fff !important; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(13,110,253,0.2); }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════ GLOBAL LOADER ══════════════════ -->
+<div id="appLoader">
+  <div class="spinner-glow"></div>
+  <div class="loader-text" id="loaderText">กำลังประมวลผล...</div>
+</div>
+
+<!-- ══════════════════ CUSTOM MODALS ══════════════════ -->
+  <div class="modal fade" id="auditDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-header border-0 bg-light rounded-top-4">
+        <h5 class="modal-title fw-black text-primary"><i class="bi bi-journal-check me-2"></i>รายละเอียดการทำรายการ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 bg-white rounded-bottom-4">
+        <div id="auditDetailContent">กำลังโหลด...</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="appConfirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-body text-center p-4">
+        <div id="appConfirmIcon" class="app-modal-icon"></div>
+        <h5 id="appConfirmTitle" class="fw-black mb-2" style="color:#0f172a;"></h5>
+        <p id="appConfirmText" class="text-muted mb-4" style="font-size: 14px; line-height:1.5;"></p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-light rounded-pill px-4 fw-bold text-secondary" data-bs-dismiss="modal" id="appConfirmCancelBtn">ยกเลิก</button>
+          <button type="button" class="btn rounded-pill px-4 fw-bold" id="appConfirmOkBtn">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="appPromptModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-body p-4">
+        <h5 id="appPromptTitle" class="fw-black mb-2 text-center text-primary"></h5>
+        <div id="appPromptHtml" class="text-muted mb-3 text-center" style="font-size: 13.5px; line-height:1.4;"></div>
+        <div class="mb-4">
+          <label id="appPromptLabel" class="form-label fw-bold text-secondary" style="font-size:12px;"></label>
+          <input type="number" id="appPromptInput" class="form-control form-control-lg text-center fw-bold text-primary" style="font-size:24px;">
+        </div>
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-light rounded-pill px-4 fw-bold text-secondary" data-bs-dismiss="modal" id="appPromptCancelBtn">ยกเลิก</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="appPromptOkBtn">ตกลง</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LOGIN OVERLAY ══════════════════ -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="text-center mb-4">
+      <h3 class="fw-black text-primary">Ward 9/2</h3>
+      <div class="text-muted" style="font-size:13px;">ระบบบริหารจัดการหอผู้ป่วย 9/2</div>
+    </div>
+    <form id="loginForm">
+      <!-- ลบช่อง ID ออก -->
+      <div class="mb-3">
+        <label class="form-label fw-bold" style="font-size:13px;">รหัส PIN เข้าใช้งาน</label>
+        <input type="password" id="loginPin" class="form-control" placeholder="กรอกรหัสผ่าน " required inputmode="numeric">
+      </div>
+      <div id="loginErrorMsg" class="text-danger fw-bold text-center mb-3" style="font-size:13px; display:none; background:#fef2f2; border-radius:8px; padding:8px;"></div>
+      <button type="submit" id="loginBtn" class="btn btn-primary w-100 rounded-pill fw-bold" style="font-size:15px; padding:10px; transition: all 0.3s;">
+        <i class="bi bi-box-arrow-in-right me-2"></i>เข้าสู่ระบบ
+      </button>
+    </form>
+    <div class="text-center mt-3 text-muted" style="font-size:11px;">* หากไม่มีรหัสผ่าน กรุณาติดต่อหัวหน้าหอผู้ป่วย</div>
+  </div>
+</div>
+
+<!-- ══════════════════ MAIN APP ══════════════════ -->
+<div id="mainApp" style="display:none;" class="container-fluid p-2 p-md-4">
+  <div class="card p-3 mb-3 bg-grad">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <div class="top-title h4 m-0">CloudWard : ระบบบริหารจัดการ Ward 9/2</div>
+        <div id="currentTime" class="subtle text-white-50"></div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+        <div class="nurse-chip" role="button" tabindex="0" onclick="doLogout()" title="คลิกเพื่อออกจากระบบ">
+          <span>👩‍⚕️ เข้าสู่ระบบ:</span><span class="muted" id="nurseIdText">...</span><i class="bi bi-box-arrow-right ms-1 text-white"></i>
+        </div>
+        <div class="year-selector-wrap">
+          <label for="yearSelector"><i class="bi bi-calendar3"></i> ปี:</label>
+          <select id="yearSelector" onchange="onYearChange()"><option value="">กำลังโหลด...</option></select>
+        </div>
+        <select id="sheetSelector" class="form-select form-select-sm" style="width:180px;" onchange="onSheetChange()"></select>
+        <button class="btn btn-sm btn-light rounded-pill px-3" onclick="showFullReport(this)">รายงานสรุปเดือน</button>
+        <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="showCrossYearReport()"><i class="bi bi-bar-chart-steps me-1"></i>เปรียบเทียบปี</button>
+        <button class="btn btn-sm btn-danger rounded-pill px-3" id="btnCloseMonth" onclick="closeMonthUI()">ปิดยอดเดือน</button>
+      </div>
+    </div>
+  </div>
+
+ 
+
+<!-- ── 1. สรุปยอดแบบสมการ Census ── -->
+  <div class="row g-2 mb-3">
+    <div class="col-12">
+      <div class="card p-3 shadow-sm border-0">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="section-title text-dark"><i class="bi bi-clipboard-data me-2"></i>สรุปยอดผู้ป่วย (Census)</div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-dark rounded-pill" onclick="exportCSV('ALL')"><i class="bi bi-download me-1"></i>Export CSV</button>
+            <span class="chip bg-light border" id="sheetStatusChip">-</span>
+          </div>
+        </div>
+ <div class="row g-2 text-center align-items-center justify-content-center">
+          <!-- เติม id ให้ครบตามนี้ครับ -->
+          <div class="col-4 col-md-2"><div class="mini"><div class="label">ยอดยกมา</div><p class="value text-secondary" id="sumCarry">0</p></div></div>
+          <div class="col-auto d-none d-md-block"><i class="bi bi-plus-lg text-muted"></i></div>
+          <div class="col-4 col-md-2"><div class="mini" style="border-bottom: 3px solid #0d6efd;"><div class="label">รับใหม่เดือนนี้</div><p class="value text-primary" id="sumNew">0</p></div></div>
+          <div class="col-auto d-none d-md-block"><i class="bi bi-pause text-muted" style="transform: rotate(90deg);"></i></div>
+          <div class="col-4 col-md-2"><div class="mini"><div class="label">รวมทั้งหมด</div><p class="value text-dark" id="sumTotal">0</p></div></div>
+          <div class="col-auto d-none d-md-block"><i class="bi bi-arrow-right-circle-fill text-muted" style="font-size: 20px;"></i></div>
+          <div class="col-6 col-md-2"><div class="mini bg-success bg-opacity-10"><div class="label text-success fw-bold">Active ปัจจุบัน</div><p class="value text-success" id="sumActive">0</p></div></div>
+          <div class="col-6 col-md-2"><div class="mini"><div class="label text-danger">จำหน่ายแล้ว (D/C)</div><p class="value text-danger" id="sumDC">0</p></div></div>
+        </div>
+        <div class="subtle text-end mt-2">* LOS แบบเวชระเบียน: เดือนเปิดคิดถึง "วันนี้"; เดือนปิดคิดถึง "สิ้นเดือน"</div>
+      </div>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills nav-fill mb-3 bg-white p-1 rounded-pill shadow-sm" id="mainTab">
+    <li class="nav-item"><button class="nav-link active rounded-pill" data-bs-toggle="tab" data-bs-target="#list-pane" onclick="loadDashboard()">แดชบอร์ด</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="tab" data-bs-target="#form-pane" onclick="prepareNewForm()">ลงทะเบียนใหม่</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill" data-bs-toggle="tab" data-bs-target="#incident-pane" onclick="openQaTab()">ตัวชี้วัด QA</button></li>
+    <li class="nav-item"><button class="nav-link rounded-pill text-secondary" data-bs-toggle="tab" data-bs-target="#audit-pane" onclick="loadAuditLogs()"><i class="bi bi-clock-history me-1"></i>ประวัติการใช้งาน</button></li>
+  </ul>
+
+  <div class="tab-content">
+<div class="tab-pane fade show active" id="list-pane">
+  
+  <!-- 🟦 ตารางที่ 1: ผู้ป่วยยอดยกมา (แยกเฉพาะยอดยกมา) -->
+  <div class="card p-3 mb-3 border-top border-secondary border-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="section-title text-secondary"><i class="bi bi-box-arrow-in-right"></i> ยอดยกมา</div>
+      <div class="d-flex gap-2 align-items-center"><span class="chip bg-light border">จำนวน: <b id="carryCount" class="text-secondary">0</b></span></div>
+    </div>
+    <div class="filters-bar">
+      <div class="filters-left">
+        <button class="seg-btn active" id="carryFilterAll" onclick="setTableFilter('carry','ALL')">ทั้งหมด</button>
+        <button class="seg-btn seg-danger" id="carryFilterLong" onclick="setTableFilter('carry','LONG')">Long-stay (≥30 วัน)</button>
+      </div>
+      <div class="filters-right">
+        <input class="form-control form-control-sm" style="width:240px" id="carryQuickSearch" placeholder="ค้นหา HN / AN / ชื่อ" oninput="quickSearch('carry', this.value)">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="carryTable" class="table table-hover w-100 dt-responsive nowrap align-middle mb-0">
+        <thead class="table-light"><tr><th>ประเภท</th><th>ลำดับ</th><th>HN</th><th>AN</th><th>ชื่อ-นามสกุล</th><th>Admit</th><th>สาย/แผนก</th><th>LOS</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+        <tbody id="carryBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 🟢 ตารางที่ 2: ผู้ป่วยรับใหม่ (รวมรับใหม่, ย้าย, Refer) -->
+  <div class="card p-3 mb-3 border-top border-primary border-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="section-title text-primary"><i class="bi bi-person-plus"></i> ผู้ป่วยรับใหม่เดือนนี้</div>
+      <div class="d-flex gap-2 align-items-center"><span class="chip bg-light border">จำนวน: <b id="newCount" class="text-primary">0</b></span></div>
+    </div>
+    <div class="filters-bar">
+      <div class="filters-left">
+        <button class="seg-btn active" id="newFilterAll" onclick="setTableFilter('new','ALL')">ทั้งหมด</button>
+      </div>
+      <div class="filters-right">
+        <input class="form-control form-control-sm" style="width:240px" id="newQuickSearch" placeholder="ค้นหา HN / AN / ชื่อ" oninput="quickSearch('new', this.value)">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="newTable" class="table table-hover w-100 dt-responsive nowrap align-middle mb-0">
+        <thead class="table-light"><tr><th>ประเภท</th><th>ลำดับ</th><th>HN</th><th>AN</th><th>ชื่อ-นามสกุล</th><th>Admit</th><th>สาย/แผนก</th><th>LOS</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+        <tbody id="newBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ⚪️ ตารางที่ 3: จำหน่ายแล้ว (D/C) -->
+  <div class="card p-3 border-top border-secondary border-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="section-title text-secondary"><i class="bi bi-person-dash"></i> ผู้ป่วยจำหน่ายแล้ว</div>
+      <div class="d-flex gap-2 align-items-center"><span class="chip bg-light border">จำนวน: <b id="dcCount" class="text-secondary">0</b></span></div>
+    </div>
+    <div class="filters-bar">
+      <div class="filters-right">
+        <input class="form-control form-control-sm" style="width:240px" id="dcQuickSearch" placeholder="ค้นหา HN / AN / ชื่อ" oninput="quickSearch('dc', this.value)">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table id="dcTable" class="table table-hover w-100 dt-responsive nowrap align-middle mb-0">
+        <thead class="table-light"><tr><th>ประเภท</th><th>ลำดับ</th><th>HN</th><th>AN</th><th>ชื่อ-นามสกุล</th><th>Admit</th><th>สาย/แผนก</th><th>LOS</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+        <tbody id="dcBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    <div class="tab-pane fade" id="form-pane">
+      <form id="dataForm">
+        <input type="hidden" id="rowId"><input type="hidden" id="patientStatusStored">
+        <div class="card mb-3"><div class="p-3 border-bottom"><div class="section-title">1) การรับเข้า</div></div><div class="p-3 row g-2"><div class="col-4 col-md-2"><label class="form-label">ลำดับ</label><input type="text" class="form-control bg-light" id="seq" readonly></div><div class="col-8 col-md-3"><label class="form-label">ประเภท</label><select class="form-select" id="inType"><option value="รับใหม่">รับใหม่</option><option value="รับย้าย">รับย้าย</option><option value="รับ Refer">รับ Refer</option></select></div><div class="col-6 col-md-3"><label class="form-label">วันที่รับ *</label><input type="date" class="form-control" id="inDate" required onchange="calculateLOSPreview()"></div>
+          
+<div class="col-6 col-md-2">
+  <label class="form-label">เวลา (24 ชม.) *</label>
+  <div class="input-group">
+    <input type="text" class="form-control" id="inTime" placeholder="เช่น 0830" inputmode="numeric" onblur="smartParseTime(this)">
+    <button class="btn btn-outline-secondary" type="button" onclick="setCurrentTime()">NOW</button>
+  </div>
+</div>         
+          <div class="col-12 col-md-2"><label class="form-label">ต้นทาง</label><input type="text" class="form-control" id="inDept"></div></div></div>
+        <div class="card mb-3"><div class="p-3 border-bottom"><div class="section-title">2) ข้อมูลผู้ป่วย</div></div><div class="p-3 row g-2"><div class="col-12 col-md-6"><label class="form-label">ชื่อ-นามสกุล *</label><div class="input-group"><select id="prefix" class="form-select" style="max-width:90px;"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="น.ส.">น.ส.</option><option value="ด.ช.">ด.ช.</option><option value="ด.ญ.">ด.ญ.</option></select><input type="text" class="form-control" id="patientName" required></div></div><div class="col-6 col-md-3"><label class="form-label">เพศ *</label><select id="gender" class="form-select" required><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option></select></div><div class="col-6 col-md-3"><label class="form-label">อายุ (ป/ด/ว)</label><div class="input-group"><input type="number" id="ageYear" class="form-control" value="0"><input type="number" id="ageMonth" class="form-control" value="0"><input type="number" id="ageDay" class="form-control" value="0"></div></div><div class="col-6 col-md-3"><label class="form-label">HN *</label><input type="text" class="form-control" id="hn" required onblur="formatHNAN('hn')"></div><div class="col-6 col-md-3"><label class="form-label">AN *</label><input type="text" class="form-control" id="an" required onblur="checkAN()"></div><div class="col-6 col-md-3"><label class="form-label">แผนก</label><select id="ward" class="form-select"></select></div><div class="col-6 col-md-3"><label class="form-label">สาย</label><select id="sai" class="form-select"></select></div><div class="col-12 col-md-4"><label class="form-label">สิทธิการรักษา</label><select id="sithi" class="form-select"></select></div><div class="col-6 col-md-4"><label class="form-label">Dx. แรก *</label><div class="position-relative"><div class="dx-tagbox" id="dx1Box" onclick="document.getElementById('dx1Input').focus()"><input type="text" id="dx1Input" class="dx-taginput" placeholder="พิมพ์แล้วกด Enter" autocomplete="off"></div><div class="dx-suggest" id="dx1Suggest" style="display:none;"></div></div><input type="hidden" id="dx1"></div><div class="col-6 col-md-4"><label class="form-label">Dx. หลัง</label><div class="position-relative"><div class="dx-tagbox" id="dx2Box" onclick="document.getElementById('dx2Input').focus()"><input type="text" id="dx2Input" class="dx-taginput" placeholder="พิมพ์แล้วกด Enter" autocomplete="off"></div><div class="dx-suggest" id="dx2Suggest" style="display:none;"></div></div><input type="hidden" id="dx2"></div><div class="col-12 col-md-12 mt-2"><div class="p-2 border rounded bg-light"><label class="form-label fw-bold text-primary mb-1"><i class="bi bi-geo-alt-fill"></i> ที่อยู่ผู้ป่วย (พิมพ์ตำบล, อำเภอ หรือรหัสไปรษณีย์เพื่อค้นหาอัตโนมัติ)</label><div class="row g-2"><div class="col-12 col-md-4"><label class="form-label" style="font-size:12px;">บ้านเลขที่/หมู่/ถนน</label><input type="text" class="form-control form-control-sm" id="addrLine1"></div><div class="col-6 col-md-2"><label class="form-label" style="font-size:12px;">ตำบล/แขวง</label><input type="text" class="form-control form-control-sm" id="addrDistrict"></div><div class="col-6 col-md-2"><label class="form-label" style="font-size:12px;">อำเภอ/เขต</label><input type="text" class="form-control form-control-sm" id="addrAmphoe"></div><div class="col-6 col-md-2"><label class="form-label" style="font-size:12px;">จังหวัด</label><input type="text" class="form-control form-control-sm" id="addrProvince"></div><div class="col-6 col-md-2"><label class="form-label" style="font-size:12px;">รหัสไปรษณีย์</label><input type="text" class="form-control form-control-sm" id="addrZipcode"></div></div></div><input type="hidden" id="address"></div>
+        <!-- ═══ ข้อมูลติดต่อ (เบอร์โทรศัพท์) ═══ -->
+<div class="col-12 mt-2">
+  <div class="p-2 border rounded bg-light">
+    <label class="form-label fw-bold text-success mb-1">
+      <i class="bi bi-telephone-fill"></i> ข้อมูลติดต่อ
+    </label>
+    <div class="row g-2">
+      <div class="col-12 col-md-4">
+        <label class="form-label" style="font-size:12px;">เบอร์โทรคนไข้</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-phone"></i></span>
+          <input type="tel" class="form-control form-control-sm" id="patientPhone" 
+                 placeholder="0xx-xxx-xxxx" maxlength="15"
+                 oninput="formatPhoneNumber(this)">
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label" style="font-size:12px;">เบอร์โทรญาติ 1</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-people"></i></span>
+          <input type="tel" class="form-control form-control-sm" id="relativePhone1" 
+                 placeholder="0xx-xxx-xxxx" maxlength="15"
+                 oninput="formatPhoneNumber(this)">
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label" style="font-size:12px;">เบอร์โทรญาติ 2</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text"><i class="bi bi-people"></i></span>
+          <input type="tel" class="form-control form-control-sm" id="relativePhone2" 
+                 placeholder="0xx-xxx-xxxx" maxlength="15"
+                 oninput="formatPhoneNumber(this)">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div></div>
+        <div class="card mb-3"><div class="p-3 border-bottom"><div class="section-title">3) จำหน่าย / Outcome</div></div><div class="p-3 row g-2"><div class="col-6 col-md-3"><label class="form-label">D/C วันที่</label><input type="date" class="form-control" id="dcDate" onchange="calculateLOSPreview()"></div><div class="col-6 col-md-3"><label class="form-label">F/U</label><input type="text" class="form-control" id="fu" placeholder="เช่น นัด 7 วัน"></div><div class="col-6 col-md-3"><label class="form-label">LOS (Preview)</label><input type="text" class="form-control text-center fw-bold" id="los" readonly></div><div class="col-12 col-md-3"><label class="form-label">Admit &lt; 6 ชม.</label><input type="text" id="admitUnder6" class="form-control" oninput="calculateLOSPreview()" placeholder="ระบุ ชม."></div><div class="col-6 col-md-3"><label class="form-label">ตาย (วันที่)</label><input type="date" id="deathDate" class="form-control" onchange="calculateLOSPreview()"></div><div class="col-6 col-md-4"><label class="form-label">ย้ายแผนก (วันที่)</label><input type="date" id="transferOutDate" class="form-control" onchange="calculateLOSPreview()"></div><div class="col-6 col-md-4"><label class="form-label">ย้ายไปแผนก</label><input type="text" id="transferOut" class="form-control"></div><div class="col-6 col-md-4"><label class="form-label">หนี (วันที่)</label><input type="date" id="abscondDate" class="form-control" onchange="calculateLOSPreview()"></div><div class="col-6 col-md-4"><label class="form-label">ปฏิเสธ (วันที่)</label><input type="date" id="refuseDate" class="form-control" onchange="calculateLOSPreview()"></div><div class="col-6 col-md-4"><label class="form-label">Refer Out (วันที่)</label><input type="date" id="referOutDate" class="form-control" onchange="calculateLOSPreview()"></div><div class="col-12 col-md-4"><label class="form-label">Refer ไปที่ไหน</label><input type="text" id="referDestination" class="form-control"></div></div></div>
+        <div class="sticky-actions"><button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow">บันทึกข้อมูล</button></div>
+      </form>
+    </div>
+
+    <div class="tab-pane fade" id="incident-pane">
+      <div class="d-flex gap-2 mb-3 p-1 bg-white rounded-pill shadow-sm" style="width:fit-content;"><button class="qa-tab-btn active" id="qaTab2Btn" onclick="switchQaTab(2)"><i class="bi bi-grid-3x3-gap me-1"></i>ตัวชี้วัด 11-27</button><button class="qa-tab-btn" id="qaTab3Btn" onclick="switchQaTab(3)"><i class="bi bi-graph-up me-1"></i>Trend</button></div>
+      <div id="qaPane2">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><div><div class="section-title">ตัวชี้วัดคุณภาพ ข้อ 11-27</div><div class="subtle" id="qaCardMonthLabel">เดือน: —</div></div><div class="d-flex gap-2"><span class="chip bg-light border" id="qaCardPD">วันนอน: -</span><span class="chip bg-light border" id="qaCardPT">ผู้ป่วย: -</span><button class="btn btn-sm btn-outline-primary rounded-pill" onclick="loadQaCards()"><i class="bi bi-arrow-clockwise me-1"></i>โหลดข้อมูล</button></div></div>
+        <div id="qaCardGrid"></div>
+      </div>
+      <div id="qaPane3" style="display:none;"><div class="card p-3"><div class="section-title">Trend ตัวชี้วัด</div><div class="subtle">เลือกเดือนที่ต้องการเปรียบเทียบ</div><div id="trendMonthPicker" class="d-flex flex-wrap gap-2 my-3"></div><div id="trendChartsArea"><div class="text-center text-muted p-4 subtle">เลือกเดือนแล้วกดแสดง</div></div></div></div>
+    </div>
+
+    <div class="tab-pane fade" id="audit-pane">
+      <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><div class="section-title"><i class="bi bi-clock-history"></i> ประวัติการใช้งานระบบ (Activity Logs)</div><button class="btn btn-sm btn-outline-primary rounded-pill" onclick="loadAuditLogs()"><i class="bi bi-arrow-clockwise me-1"></i>โหลดประวัติ</button></div>
+        <div class="table-wrap"><table id="auditTable" class="table table-hover w-100 dt-responsive nowrap align-middle mb-0"><thead class="table-light"><tr><th>วัน-เวลา</th><th>ผู้ทำรายการ</th><th>การกระทำ</th><th>HN</th><th>รายละเอียด</th></tr></thead><tbody id="auditBody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+<div class="modal fade" id="patientModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content border-0 shadow"><div class="modal-header bg-dark text-white"><h6 class="modal-title fw-bold">รายละเอียดผู้ป่วย</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><div id="patientModalBody">-</div></div><div class="modal-footer bg-light"></div></div></div></div>
+<div class="modal fade" id="reportModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content border-0 shadow"><div class="modal-header bg-success text-white"><h5 class="modal-title fw-bold">รายงานสรุปเดือน: <span id="reportMonthTitle"></span></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><div id="reportResult">กำลังโหลด...</div></div></div></div></div>
+<div class="modal fade" id="crossYearModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content border-0 shadow"><div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;"><h5 class="modal-title fw-bold"><i class="bi bi-bar-chart-steps me-2"></i>รายงานเปรียบเทียบปี</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><div id="crossYearFilters" class="mb-3 d-flex gap-2 flex-wrap align-items-center"></div><div id="crossYearResult">กำลังโหลด...</div></div></div></div></div>
+<div class="modal fade" id="dischargeModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">จำหน่ายผู้ป่วย</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="disRowId"><div class="mb-3"><label class="form-label">ประเภทการจำหน่าย</label><select id="disType" class="form-select"><option value="">-- เลือก --</option><option value="dc">กลับบ้าน (D/C)</option><option value="transfer">ย้ายแผนก</option><option value="refer">Refer Out</option><option value="death">เสียชีวิต</option><option value="abscond">หนี</option><option value="refuse">ปฏิเสธ</option></select></div><div class="mb-3" id="waitBox" style="display:none;"><label class="form-label">รอคอยกลับบ้าน (นาที)</label><input type="number" id="disWaitMin" class="form-control"></div><div class="mb-3"><label class="form-label">วันที่ / เวลา</label><div class="input-group"><input type="date" id="disDate" class="form-control">
+  
+<input type="text" id="disTime" class="form-control" placeholder="เช่น 0830" inputmode="numeric" onblur="smartParseTime(this)">  
+  <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('disTime').value=new Date().toLocaleTimeString('th-TH',{hour12:false,hour:'2-digit',minute:'2-digit'})">NOW</button></div></div><div id="fuBox" style="display:none;" class="mb-3"><label class="form-label">F/U</label><input type="text" id="disFU" class="form-control"></div><div id="transferDeptBox" style="display:none;" class="mb-3"><label class="form-label">ย้ายไปแผนก</label><input type="text" id="transferDept" class="form-control"></div><div id="referDestBox" style="display:none;" class="mb-3"><label class="form-label">Refer ไปที่</label><input type="text" id="referDest" class="form-control"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button><button type="button" class="btn btn-primary" onclick="saveDischarge()">บันทึก</button></div></div></div></div>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+
+
+
+const COL = { STATUS:0, SEQ:1, HN:2, AN:3, PREFIX:4, NAME:5, GENDER:6, AGE:7, ADDRESS:8, SITHI:9, WARD:10, SAI:11, ADMIT_DATE:12, ADMIT_TIME:13, ADMIT_DEPT:14, TRANSFER_IN_DATE:15, TRANSFER_IN_TIME:16, TRANSFER_IN_DEPT:17, REFER_IN_DATE:18, REFER_IN_TIME:19, REFER_IN_DEPT:20, DX1:21, DX2:22, DC_DATE:23, FU:24, ADMIT_UNDER6:25, LOS:26, WAIT_TIME:27, OUT_TIME:28, TRANSFER_OUT_DATE:29, TRANSFER_OUT:30, REFER_OUT_DATE:31, REFER_DEST:32, ABSCOND_DATE:33, REFUSE_DATE:34, DEATH_DATE:35, PHONE:36, RELATIVE_PHONE1:37, RELATIVE_PHONE2:38 };
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbnHAAian9hEACscDHAfGhTolqv9erSSCbKXONU4t1kVygNRKuYx-a7xUvqVfCX4XzyQ/exec";
+
+let currentSheet = ""; let currentYearBE = null;       
+
+  let carryDT, newDT, dcDT, auditDT;
+const tableState = { carry:{ filter:'ALL', search:'' }, new:{ filter:'ALL', search:'' }, dc:{ filter:'ALL', search:'' } };
+
+
+let lastData =[], lastDataByRowId = new Map();
+let lastTriggerEl = null, disItem = null, DX_OPTIONS = [];
+
+let currentReportCtx = null;
+const dxTagState = { dx1:{ tags:[], activeIdx:-1, suggest:[], selected:-1 }, dx2:{ tags:[], activeIdx:-1, suggest:[], selected:-1 } };
+
+/* 🚀 Cache สำหรับ dropdown data — ไม่ต้องโหลดซ้ำ */
+let _cachedDropdowns = null;
+
+/* ── Notification Helpers ── */
+const notyf = new Notyf({ duration: 3500, position: { x: 'right', y: 'top' }, ripple: true, dismissible: true, types:[ { type: 'success', background: '#059669', icon: false }, { type: 'error', background: '#dc2626', icon: false } ] });
+function showLoader(text = 'กำลังประมวลผล...') { document.getElementById('loaderText').innerText = text; document.getElementById('appLoader').style.display = 'flex'; }
+function hideLoader() { document.getElementById('appLoader').style.display = 'none'; }
+function showSuccess(msg) { notyf.success('<i class="bi bi-check-circle me-2"></i> ' + msg); }
+function showError(msg) { notyf.error('<i class="bi bi-x-circle me-2"></i> ' + msg); }
+
+/* ── Custom App Confirm / Prompt ── */
+function appConfirm(title, text, iconType = 'warning', confirmBtnText = 'ยืนยัน', confirmBtnClass = 'btn-primary', showCancel = true) {
+  return new Promise((resolve) => {
+    document.getElementById('appConfirmTitle').innerText = title; document.getElementById('appConfirmText').innerText = text;
+    let iconHtml = '';
+    if(iconType === 'warning') iconHtml = '<i class="bi bi-exclamation-circle text-warning"></i>';
+    else if(iconType === 'question') iconHtml = '<i class="bi bi-question-circle text-primary"></i>';
+    else if(iconType === 'success') iconHtml = '<i class="bi bi-check-circle text-success"></i>';
+    else if(iconType === 'error') iconHtml = '<i class="bi bi-x-circle text-danger"></i>';
+    document.getElementById('appConfirmIcon').innerHTML = iconHtml;
+    const okBtn = document.getElementById('appConfirmOkBtn'); okBtn.innerText = confirmBtnText; okBtn.className = `btn rounded-pill px-4 fw-bold ${confirmBtnClass}`;
+    document.getElementById('appConfirmCancelBtn').style.display = showCancel ? 'inline-block' : 'none';
+    const modalEl = document.getElementById('appConfirmModal'); const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const newOkBtn = okBtn.cloneNode(true); okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    let resolved = false;
+    newOkBtn.addEventListener('click', () => { resolved = true; modal.hide(); resolve(true); });
+    const onHidden = () => { modalEl.removeEventListener('hidden.bs.modal', onHidden); if (!resolved) resolve(false); };
+    modalEl.addEventListener('hidden.bs.modal', onHidden); modal.show();
+  });
+}
+
+function appPrompt(title, htmlText, label, defaultValue = '') {
+  return new Promise((resolve) => {
+    document.getElementById('appPromptTitle').innerText = title; document.getElementById('appPromptHtml').innerHTML = htmlText; document.getElementById('appPromptLabel').innerText = label;
+    const input = document.getElementById('appPromptInput'); input.value = defaultValue; input.classList.remove('is-invalid');
+    const modalEl = document.getElementById('appPromptModal'); const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const okBtn = document.getElementById('appPromptOkBtn'); const newOkBtn = okBtn.cloneNode(true); okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    let resolved = false;
+    newOkBtn.addEventListener('click', () => {
+      if(!input.value.trim()) { input.classList.add('is-invalid'); return; }
+      input.classList.remove('is-invalid'); resolved = true; modal.hide(); resolve(input.value.trim());
+    });
+    const onHidden = () => { modalEl.removeEventListener('hidden.bs.modal', onHidden); if (!resolved) resolve(null); };
+    modalEl.addEventListener('hidden.bs.modal', onHidden); modalEl.addEventListener('shown.bs.modal', () => { input.focus(); input.select(); }, {once: true}); modal.show();
+  });
+}
+
+/* ── Auth ── */
+let currentUser = null; const AUTH_KEY = "cloudWard.auth";
+
+async function checkAuth() {
+  const authData = JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); const now = new Date().getTime();
+  if (authData && (now - authData.time < 12 * 60 * 60 * 1000)) {
+    currentUser = authData; document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('mainApp').style.display = 'block'; document.getElementById('nurseIdText').innerText = currentUser.name;
+    showLoader('กำลังโหลดข้อมูลกระดานผู้ป่วย...');
+    await initAppOptimized(); // 🚀 ใช้ initApp แทน initSheets
+    hideLoader();
+  } else { document.getElementById('loginOverlay').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; }
+}
+
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pinInput = document.getElementById('loginPin'); 
+  const btn = document.getElementById('loginBtn'); 
+  const errorMsg = document.getElementById('loginErrorMsg');
+  
+  const pin = pinInput.value.trim();
+  errorMsg.style.display = 'none'; 
+  pinInput.disabled = true; 
+  btn.disabled = true;
+  
+  const originalBtnText = btn.innerHTML; 
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังตรวจสอบ...';
+  
+  try {
+    // ส่งแค่ PIN ไปให้ Server ตรวจสอบ
+    const res = await callApi('login', { pin: pin });
+    
+    currentUser = { id: res.nurseId, name: res.nurseName, role: res.role, time: new Date().getTime() }; 
+    localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+    
+    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>ยินดีต้อนรับ!'; 
+    btn.classList.replace('btn-primary', 'btn-success');
+    
+    setTimeout(async () => { 
+      document.getElementById('loginOverlay').style.display = 'none'; 
+      document.getElementById('mainApp').style.display = 'block'; 
+      document.getElementById('nurseIdText').innerText = currentUser.name;
+      showLoader('กำลังเตรียมข้อมูลกระดานผู้ป่วย...');
+      await initAppOptimized();
+      hideLoader();
+    }, 500);
+  } catch(err) {
+    pinInput.disabled = false; 
+    btn.disabled = false; 
+    btn.innerHTML = originalBtnText; 
+    errorMsg.innerText = err.message || 'PIN ไม่ถูกต้อง'; 
+    errorMsg.style.display = 'block'; 
+    pinInput.value = ''; 
+    pinInput.focus(); 
+    showError('เข้าสู่ระบบไม่สำเร็จ');
+  }
+});
+
+// แก้ไขฟังก์ชันเดิมให้รับค่า force ได้
+async function doLogout(force = false) {
+  // ถ้า force เป็น false (ปกติกดปุ่ม) ถึงจะโชว์ confirm
+  if (!force) {
+    if (!await appConfirm('ออกจากระบบ?', 'คุณต้องการออกจากระบบใช่หรือไม่?', 'question', 'ใช่, ออกจากระบบ', 'btn-danger')) return;
+  }
+  
+  try {
+    await callApi('logLogout', { nurseId: currentUser.id, nurseName: currentUser.name });
+  } catch(e) { console.error("Logout log error", e); }
+  
+  localStorage.removeItem(AUTH_KEY); 
+  _cachedDropdowns = null; 
+  location.reload(); 
+}
+
+async function callApi(action, data = null) {
+  const body = { action, data, meta: { nurseId: currentUser ? currentUser.id : "", nurseName: currentUser ? currentUser.name : "", yearBE: currentYearBE || null } };
+  const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(body) }); const res = await r.json();
+  if (res.status === 'success') return res.data; throw new Error(res.message);
+}
+
+/* ═══════════════════════════════════════════════════════
+   🚀 OPTIMIZED INIT — โหลดข้อมูลครั้งเดียว (1 API call)
+═══════════════════════════════════════════════════════ */
+async function initAppOptimized() {
+  try {
+    const result = await callApi('initApp', { yearBE: currentYearBE });
+    
+    // ตั้งค่า Year selector
+    const yearSel = document.getElementById('yearSelector');
+    if (result.years && result.years.length > 0) {
+      yearSel.innerHTML = result.years.map(y => `<option value="${y}">${y}</option>`).join('');
+      currentYearBE = result.activeYear || result.years[0];
+      yearSel.value = currentYearBE;
+    } else {
+      const nowYear = new Date().getFullYear() + 543;
+      yearSel.innerHTML = `<option value="${nowYear}">${nowYear}</option>`;
+      currentYearBE = nowYear;
+    }
+    
+    // ตั้งค่า Sheet selector
+    const sheetSel = document.getElementById('sheetSelector');
+    const btnClose = document.getElementById('btnCloseMonth');
+    if (result.sheets && result.sheets.length > 0) {
+      sheetSel.innerHTML = result.sheets.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+      currentSheet = result.currentSheet || result.sheets[0];
+      sheetSel.value = currentSheet;
+      btnClose.innerText = "ปิดยอดเดือน"; btnClose.classList.remove('btn-warning'); btnClose.classList.add('btn-danger');
+    } else {
+      sheetSel.innerHTML = '<option value="">ยังไม่มีข้อมูล</option>';
+      currentSheet = "";
+      btnClose.innerText = "เริ่มเดือนแรก"; btnClose.classList.remove('btn-danger'); btnClose.classList.add('btn-warning');
+    }
+    
+    // โหลดข้อมูลผู้ป่วย (มาพร้อมกับ initApp แล้ว)
+    lastData = Array.isArray(result.patients) ? result.patients : [];
+    rebuildIndex(); updateSummary(lastData);
+    document.getElementById('sheetStatusChip').innerText = 'โหลดแล้ว';
+    renderTables();
+    
+    // 🚀 Cache dropdowns + เติม select (มาพร้อมกับ initApp แล้ว)
+    if (result.dropdowns) {
+      _cachedDropdowns = result.dropdowns;
+      applyDropdowns(result.dropdowns);
+    }
+    
+  } catch(err) {
+    console.error('initApp error, fallback to legacy:', err);
+    // Fallback ถ้า backend ยังไม่ได้ deploy initApp
+    await initSheets();
+  }
+}
+
+/* 🚀 เติมข้อมูล dropdown จาก cache หรือ API */
+function applyDropdowns(d) {
+  fillSelect('ward', d.ward); fillSelect('sithi', d.sithi); fillSelect('sai', d.sai);
+  DX_OPTIONS = (d.dx || []).map(x => String(x)).filter(Boolean);
+  initDxTagInput('dx1'); initDxTagInput('dx2');
+  loadDxTagsFromHidden('dx1'); loadDxTagsFromHidden('dx2');
+}
+
+async function loadDropdownsIfNeeded() {
+  if (_cachedDropdowns) {
+    applyDropdowns(_cachedDropdowns);
+    return;
+  }
+  const d = await callApi('getDropdownData');
+  _cachedDropdowns = d;
+  applyDropdowns(d);
+}
+
+/* ════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════ */
+function escapeHtml(s){ return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
+function formatPhoneNumber(el) {
+  let v = el.value.replace(/[^\d]/g, '');
+  if (v.length > 10) v = v.slice(0, 10);
+  if (v.length >= 4 && v.length <= 6) { el.value = v.slice(0, 3) + '-' + v.slice(3); }
+  else if (v.length >= 7) { el.value = v.slice(0, 3) + '-' + v.slice(3, 6) + '-' + v.slice(6); }
+  else { el.value = v; }
+}
+function fillSelect(id, items){ const el=document.getElementById(id); if(el) el.innerHTML='<option value="">-- เลือก --</option>'+(items||[]).map(i=>`<option value="${escapeHtml(i)}">${escapeHtml(i)}</option>`).join(''); }
+function splitDxList(s){ return String(s||'').split(/[;,\n\/|]+/g).map(x=>x.trim()).filter(Boolean); }
+function safeInt(v){ const n=parseInt(v,10); return isNaN(n)?0:n; }
+function topEntries(counts,n=10){ return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,n); }
+function addCount(map,key,inc=1){ const k=String(key||'').trim(); if(k) map[k]=(map[k]||0)+inc; }
+function formatDateForInput(v){ if(!v||!String(v).includes('/')) return ''; const p=String(v).split('/'); let y=parseInt(p[2],10); if(y>2400) y-=543; return `${y}-${String(p[1]).padStart(2,'0')}-${String(p[0]).padStart(2,'0')}`; }
+function formatDateForSheet(v){ if(!v) return ''; const p=v.split('-'); return `${p[2]}/${p[1]}/${parseInt(p[0],10)+543}`; }
+function formatTimeForInput(v){ if(!v) return ''; let s=String(v).trim().replace(/AM|PM|am|pm/g,'').replace(/[^0-9:]/g,''); let parts=s.split(':'); let hh=(parts[0]||'').padStart(2,'0').slice(0,2); let mm=(parts[1]||'00').padStart(2,'0').slice(0,2); if(parseInt(hh,10)>23)hh='23'; if(parseInt(mm,10)>59)mm='59'; return `${hh}:${mm}`; }
+function formatHNAN(id){ let el=document.getElementById(id); let v=(el.value||'').replace(/-/g,''); if(v.length>2) el.value=v.slice(0,-2)+'-'+v.slice(-2); }
+function shortThaiDate(dmyBE){ if(!dmyBE) return ''; const s=String(dmyBE); const p=s.split('/'); if(p.length<3) return s; return `${p[0].padStart(2,'0')}/${p[1].padStart(2,'0')}`; }
+function normalizeDxToken(s){ return String(s||'').trim().replace(/\s+/g,' '); }
+function splitToTags(v){ return String(v||'').split(';').map(normalizeDxToken).filter(x=>x&&x.length>=2); }
+function tagsToString(tags){ return tags.map(t=>t.trim()).filter(Boolean).join('; '); }
+function fmt2(n){ return (isNaN(n)?0:n).toFixed(2); }
+function safeNum(v,def=0){ const n=Number(v); return Number.isFinite(n)?n:def; }
+function safeText(v,def='-'){ const s=String(v??'').trim(); return s?s:def; }
+
+function sheetNameToDate(sheetName) {
+  if(!sheetName) return null; const monthMap={'มกราคม':0,'กุมภาพันธ์':1,'มีนาคม':2,'เมษายน':3,'พฤษภาคม':4,'มิถุนายน':5,'กรกฎาคม':6,'สิงหาคม':7,'กันยายน':8,'ตุลาคม':9,'พฤศจิกายน':10,'ธันวาคม':11,'มกรา':0,'กุมภา':1,'มีนา':2,'เมษา':3,'พฤษภา':4,'มิถุนา':5,'กรกฎา':6,'สิงหา':7,'กันยา':8,'ตุลา':9,'พฤศจิกา':10,'ธันวา':11};
+  let mIdx=null; for(const m in monthMap) if(sheetName.includes(m)){mIdx=monthMap[m];break;} if(mIdx===null) return null;
+  const ym=sheetName.match(/\d+/); if(!ym) return null; let y=parseInt(ym[0],10); if(y<100) y+=2500; return new Date(y-543,mIdx,1,0,0,0,0);
+}
+function getMonthStartFromSheet(){ const d=sheetNameToDate(currentSheet); return d||null; }
+function getMonthEndFromSheet(){ const s=getMonthStartFromSheet(); if(!s) return null; return new Date(s.getFullYear(),s.getMonth()+1,0,23,59,59,999); }
+function daysInMonthFromSheet(sn){ const d=sheetNameToDate(sn||currentSheet); if(!d) return 30; return new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); }
+function setCurrentTime(){ const now=new Date(); document.getElementById('inTime').value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
+
+/* ════════════════════════════════════════════════
+   YEAR & MONTH SELECTOR (Legacy fallback)
+════════════════════════════════════════════════ */
+async function initYearSelector() {
+  let years =[]; try { years = await callApi('getYearList'); } catch(e) {}
+  const sel = document.getElementById('yearSelector');
+  if (!years || years.length === 0) { const nowYear = new Date().getFullYear() + 543; sel.innerHTML = `<option value="${nowYear}">${nowYear}</option>`; currentYearBE = nowYear; } 
+  else { sel.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join(''); currentYearBE = years[0]; sel.value = currentYearBE; }
+}
+
+async function onYearChange() { currentYearBE = Number(document.getElementById('yearSelector').value); currentSheet = ""; showLoader('กำลังเปลี่ยนปี...'); await loadSheetSelector(); await loadDashboard(true); hideLoader(); }
+
+async function loadSheetSelector() {
+  const names = await callApi('getSheetNames', { yearBE: currentYearBE }); const sel = document.getElementById('sheetSelector');
+  if (!names || names.length === 0) { sel.innerHTML = '<option value="">ยังไม่มีข้อมูล</option>'; currentSheet = ""; return; }
+  sel.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join(''); currentSheet = [...names].sort((a,b)=>{ const da=sheetNameToDate(a), db=sheetNameToDate(b); if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1; return db-da; })[0]; sel.value = currentSheet;
+}
+
+async function initSheets() {
+  await initYearSelector(); const names = await callApi('getSheetNames', { yearBE: currentYearBE }); const sel = document.getElementById('sheetSelector'); const btnClose = document.getElementById('btnCloseMonth');
+  if (!names || names.length === 0) { sel.innerHTML = '<option value="">ยังไม่มีข้อมูล</option>'; btnClose.innerText = "เริ่มเดือนแรก"; btnClose.classList.remove('btn-danger'); btnClose.classList.add('btn-warning'); currentSheet = ""; lastData =[]; updateSummary([]); document.getElementById('censusContent').innerHTML = "ยังไม่มีข้อมูล"; return; }
+  sel.innerHTML = names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join(''); btnClose.innerText = "ปิดยอดเดือน"; btnClose.classList.remove('btn-warning'); btnClose.classList.add('btn-danger'); currentSheet =[...names].sort((a,b)=>{ const da=sheetNameToDate(a),db=sheetNameToDate(b); if(!da&&!db) return 0; if(!da) return 1; if(!db) return -1; return db-da; })[0]; sel.value = currentSheet; 
+  await loadDashboard(true); 
+}
+
+async function onSheetChange(){ currentSheet = document.getElementById('sheetSelector').value; await loadDashboard(); }
+
+/* ════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════ */
+async function loadDashboard(isSilent = false) {
+  if(!isSilent) showLoader('กำลังอัปเดตกระดานผู้ป่วย...');
+  try {
+    const data = await callApi('getAllData', { sheetName: currentSheet, yearBE: currentYearBE }); lastData = Array.isArray(data) ? data :[]; rebuildIndex(); updateSummary(lastData); document.getElementById('sheetStatusChip').innerText = 'โหลดแล้ว'; renderTables(); if(!isSilent) hideLoader();
+  } catch(err) { if(!isSilent) { hideLoader(); showError(err.toString()); } else console.error('Load Dashboard Error:', err); }
+}
+
+function isCarryRow(x)       { return (x.patientStatus||x.rawData?.[COL.STATUS]||'').trim()==='ยอดยกมา'; }
+function isNewThisMonthRow(x){ const st=(x.patientStatus||x.rawData?.[COL.STATUS]||'').trim(); return st==='รับใหม่'||st==='รับย้าย'||st==='รับ Refer'; }
+
+function updateSummary(all) {
+  // สร้างรายการ ID ที่เราต้องการอัปเดต
+  const ids = {
+    sumCarry: all.filter(isCarryRow).length,
+    sumNew: all.filter(isNewThisMonthRow).length,
+    sumTotal: all.length,
+    sumActive: all.filter(x => x.status === 'ยังรักษาอยู่').length,
+    sumDC: all.filter(x => x.status === 'จำหน่ายแล้ว').length,
+    sumRows: all.length
+  };
+
+  // วนลูปเช็คว่า ID ไหนมีอยู่จริงในหน้าจอ ค่อยสั่งใส่ค่า (ป้องกัน Error)
+  for (const [id, value] of Object.entries(ids)) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = value;
+  }
+}
+
+function rebuildIndex(){ lastDataByRowId = new Map(); lastData.forEach(x => lastDataByRowId.set(String(x.rowId), x)); }
+function getItemByRowId(rowId){ return lastDataByRowId.get(String(rowId)) || null; }
+
+function quickSearch(which, text) { 
+  tableState[which].search = String(text||''); 
+  const dt = which === 'active' ? activeDT : dcDT; 
+  if(dt) dt.search(tableState[which].search).draw(); 
+}
+
+function setTableFilter(which, mode) {
+  tableState[which].filter = mode;
+  const ids = which === 'active' ? ['activeFilterAll','activeFilterLong'] : ['dcFilterAll'];
+  ids.forEach(id => document.getElementById(id)?.classList.remove('active')); 
+  
+  const hit = which === 'active' ? (mode==='ALL' ? 'activeFilterAll' : 'activeFilterLong') : 'dcFilterAll'; 
+  document.getElementById(hit)?.classList.add('active'); 
+  
+  const dt = which === 'active' ? activeDT : dcDT; 
+  if(dt) dt.draw();
+}
+
+// Custom Search Logic สำหรับตาราง
+$.fn.dataTable.ext.search.push(function(settings, data) {
+  const id = settings.nTable?.getAttribute?.('id'); 
+  let which = null; 
+  if(id === 'activeTable') which = 'active'; 
+  if(id === 'dcTable') which = 'dc'; 
+  if(!which) return true;
+  
+  const mode = tableState[which].filter || 'ALL'; 
+  if(mode === 'ALL') return true; 
+  const los = parseInt((data[7]||'').replace(/[^\d]/g,''), 10) || 0; 
+  
+  if(mode === 'LONG') return los >= 30; 
+  return true;
+});
+
+function buildRowHtml(item) {
+  const r = item.rawData || []; 
+  const type = (item.patientStatus || r[COL.STATUS] || '').trim(); 
+  const badgeMap = {'ยอดยกมา':'bg-secondary','รับใหม่':'bg-primary','รับย้าย':'bg-dark','รับ Refer':'bg-info text-dark'}; 
+  const typeBadge = badgeMap[type] || 'bg-light text-dark'; 
+  
+  // สถานะและปุ่ม Action เปลี่ยนไปตาม Active / DC
+  const isActive = item.status === 'ยังรักษาอยู่';
+  const statusBadge = isActive 
+    ? '<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-activity me-1"></i>กำลังรักษา</span>'
+    : '<span class="badge bg-success rounded-pill"><i class="bi bi-check-circle me-1"></i>จำหน่ายแล้ว</span>';
+    
+  const actionBtn = isActive
+    ? `<button class="btn-modern dis" data-action="dis" data-rowid="${item.rowId}" title="คลิกเพื่อจำหน่าย"><i class="bi bi-hospital"></i></button>`
+    : `<button class="btn-modern edit" data-action="view" data-rowid="${item.rowId}" title="ดูข้อมูล"><i class="bi bi-search"></i></button>`;
+
+  const admitDate = r[COL.ADMIT_DATE] || r[COL.TRANSFER_IN_DATE] || r[COL.REFER_IN_DATE] || ''; 
+  const los = parseInt(item.displayLOS, 10); 
+  const losBadge = !isNaN(los) ? `<span class="badge ${los >= 30 ? 'bg-danger px-3' : los >= 7 ? 'bg-warning text-dark' : 'bg-success'}">${los} วัน</span>` : '';
+  const wardSai = `${escapeHtml(r[COL.SAI]||'-')} <small class="text-muted">(${escapeHtml(r[COL.WARD]||'-')})</small>`;
+
+  return `<tr class="row-clickable ${!isNaN(los) && los >= 30 && isActive ? 'row-longstay' : ''}" data-rowid="${item.rowId}">
+    <td><span class="badge ${typeBadge}">${escapeHtml(type)}</span></td>
+    <td>${escapeHtml(r[COL.SEQ]||'')}</td>
+    <td class="fw-bold">${escapeHtml(r[COL.HN]||'')}</td>
+    <td>${escapeHtml(r[COL.AN]||'')}</td>
+    <td>${escapeHtml(r[COL.NAME]||'')}</td>
+    <td>${escapeHtml(shortThaiDate(admitDate))}</td>
+    <td>${wardSai}</td>
+    <td>${losBadge}</td>
+    <td>${statusBadge}</td>
+    <td class="text-center">${actionBtn}</td>
+  </tr>`;
+}
+
+
+
+function renderTables() {
+  const carryList = lastData.filter(isCarryRow);
+  const newList = lastData.filter(isNewThisMonthRow);
+  const dcList = lastData.filter(x => x.status === 'จำหน่ายแล้ว');
+  
+  document.getElementById('carryCount').innerText = carryList.length;
+  document.getElementById('newCount').innerText = newList.length;
+  document.getElementById('dcCount').innerText = dcList.length;
+  
+  if(carryDT) carryDT.destroy();
+  if(newDT) newDT.destroy();
+  if(dcDT) dcDT.destroy();
+  
+  document.getElementById('carryBody').innerHTML = carryList.map(buildRowHtml).join('');
+  document.getElementById('newBody').innerHTML = newList.map(buildRowHtml).join('');
+  document.getElementById('dcBody').innerHTML = dcList.map(buildRowHtml).join('');
+  
+  const dtOpts = { responsive:true, pageLength:25, language:{url:'//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json'} };
+  carryDT = $('#carryTable').DataTable({ ...dtOpts, order:[[1,'desc']] });
+  newDT   = $('#newTable').DataTable({ ...dtOpts, order:[[1,'desc']] });
+  dcDT    = $('#dcTable').DataTable({ ...dtOpts, order:[[1,'desc']] });
+}
+
+function updateCharts(sMap, saMap){
+  if(sithiChart) sithiChart.destroy(); if(saiChart) saiChart.destroy();
+  const cfg=(t,m,color)=>({type:'bar',data:{labels:Object.keys(m),datasets:[{data:Object.values(m),backgroundColor:color,borderRadius:8}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:t,align:'start'},legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{display:false}}}}});
+  sithiChart=new Chart(document.getElementById('chartSithi'),cfg('สิทธิการรักษา',sMap,'#0d6efd')); saiChart=new Chart(document.getElementById('chartSai'),cfg('สายการแพทย์',saMap,'#198754'));
+}
+
+/* ════════════════════════════════════════════════
+   PATIENT MODAL (🐛 Bug 2 Fixed — Dx + Outcome restored)
+════════════════════════════════════════════════ */
+function openPatientModal(item){
+  const r=item.rawData||[], empty='-'; let disMethod='ยังไม่จำหน่าย', disDate='', disExtra='';
+  if(r[COL.DC_DATE]) { disMethod='กลับบ้าน (D/C)'; disDate=r[COL.DC_DATE]; disExtra=r[COL.FU]?`F/U: ${r[COL.FU]}`:''; } else if(r[COL.TRANSFER_OUT_DATE]){ disMethod='ย้ายแผนก'; disDate=r[COL.TRANSFER_OUT_DATE]; disExtra=r[COL.TRANSFER_OUT]?`ย้ายไป: ${r[COL.TRANSFER_OUT]}`:''; } else if(r[COL.REFER_OUT_DATE]){ disMethod='Refer Out'; disDate=r[COL.REFER_OUT_DATE]; disExtra=r[COL.REFER_DEST]?`Refer ไป: ${r[COL.REFER_DEST]}`:''; } else if(r[COL.DEATH_DATE]) { disMethod='เสียชีวิต'; disDate=r[COL.DEATH_DATE]; } else if(r[COL.ABSCOND_DATE]) { disMethod='หนี'; disDate=r[COL.ABSCOND_DATE]; } else if(r[COL.REFUSE_DATE]) { disMethod='ปฏิเสธการรักษา'; disDate=r[COL.REFUSE_DATE]; }
+
+  document.getElementById('patientModalBody').innerHTML=`<div class="report-block"><div class="d-flex justify-content-between align-items-start mb-3"><div><div class="fw-black" style="font-size:20px;">${escapeHtml((r[COL.PREFIX]||'')+(r[COL.NAME]||''))}</div><div class="subtle">HN: <b>${escapeHtml(r[COL.HN]||empty)}</b> | AN: <b>${escapeHtml(r[COL.AN]||empty)}</b></div></div><div class="text-end"><span class="badge bg-info text-dark">LOS: ${item.displayLOS} วัน</span><div class="mt-1">${item.status==='จำหน่ายแล้ว'?'<span class="badge bg-success rounded-pill"><i class="bi bi-check-circle"></i> จำหน่ายแล้ว</span>':'<span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-activity"></i> ยังรักษาอยู่</span>'}</div></div></div><div class="row g-2"><div class="col-12 col-md-4"><div class="mini"><div class="label">เพศ / อายุ</div><div>${escapeHtml(r[COL.GENDER]||empty)} / ${escapeHtml(r[COL.AGE]||empty)}</div></div></div><div class="col-12 col-md-4"><div class="mini"><div class="label">สิทธิ</div><div class="fw-bold">${escapeHtml(r[COL.SITHI]||empty)}</div></div></div><div class="col-12 col-md-4"><div class="mini"><div class="label">สาย / แผนก</div><div class="fw-bold">${escapeHtml(r[COL.SAI]||empty)} / ${escapeHtml(r[COL.WARD]||empty)}</div></div></div><div class="col-12"><div class="mini" style="border:1px solid #10b981;"><div class="label text-success"><i class="bi bi-telephone"></i> ข้อมูลติดต่อ</div><div class="row"><div class="col-md-4">คนไข้: <b>${escapeHtml(r[COL.PHONE]||empty)}</b></div><div class="col-md-4">ญาติ 1: <b>${escapeHtml(r[COL.RELATIVE_PHONE1]||empty)}</b></div><div class="col-md-4">ญาติ 2: <b>${escapeHtml(r[COL.RELATIVE_PHONE2]||empty)}</b></div></div></div></div><div class="col-12"><div class="mini"><div class="label">Dx. แรก</div><div class="text-primary fw-bold">${escapeHtml(r[COL.DX1]||empty)}</div></div></div><div class="col-12"><div class="mini"><div class="label">Dx. หลัง</div><div>${escapeHtml(r[COL.DX2]||empty)}</div></div></div><div class="col-12"><div class="mini border border-warning"><div class="label text-warning">Outcome</div><div class="row"><div class="col-md-4">สถานะ: ${item.status==='จำหน่ายแล้ว'?'<b class="text-success">จำหน่ายแล้ว</b>':'<b class="text-warning">ยังไม่จำหน่าย</b>'}</div><div class="col-md-4">วิธี: <b>${escapeHtml(disMethod)}</b></div><div class="col-md-4">วันที่: ${disDate||'ยังไม่จำหน่าย'}</div></div><div class="mt-1">ปลายทาง: ${escapeHtml(disExtra||empty)}</div></div></div></div></div>`;
+
+  const modalFooter=document.querySelector('#patientModal .modal-footer'); const mi=bootstrap.Modal.getOrCreateInstance(document.getElementById('patientModal'));
+  let actionBtn=item.status==='จำหน่ายแล้ว' ? `<button class="btn btn-outline-danger rounded-pill flex-grow-1" id="btnModalCancelDis"><i class="bi bi-arrow-counterclockwise"></i> ยกเลิกจำหน่าย</button>` : `<button class="btn btn-warning rounded-pill flex-grow-1" id="btnModalDis"><i class="bi bi-hospital"></i> จำหน่าย</button>`;
+  modalFooter.innerHTML=`<div class="d-flex w-100 gap-2">${actionBtn}<button class="btn btn-primary rounded-pill flex-grow-1" id="btnModalEdit"><i class="bi bi-pencil-square"></i> แก้ไข</button><button class="btn btn-danger rounded-pill" id="btnModalPDF"><i class="bi bi-file-pdf"></i></button></div>`;
+
+  if(item.status==='จำหน่ายแล้ว') document.getElementById('btnModalCancelDis').onclick=()=>{ mi.hide(); confirmCancelDischarge(item); }; else document.getElementById('btnModalDis').onclick=()=>{ mi.hide(); dischargeUI(item); }; document.getElementById('btnModalEdit').onclick=()=>{ mi.hide(); editPatient(item); }; document.getElementById('btnModalPDF').onclick=()=>printPDF(item); mi.show();
+}
+
+// 3. แก้ไขฟังก์ชัน bindTableEvents
+function bindTableEvents() {
+  ['carryBody','newBody','dcBody'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.onclick = async (e) => { 
+      const btn = e.target.closest('button[data-action]'); 
+      const tr = e.target.closest('tr[data-rowid]'); 
+      if(!tr) return; 
+      const item = getItemByRowId(tr.getAttribute('data-rowid')); 
+      if(!item) return; 
+      if(btn) { 
+        e.stopPropagation(); 
+        if(btn.dataset.action === 'dis') { await dischargeUI(item); } 
+        return; 
+      } 
+      openPatientModal(item); 
+    };
+  });
+}
+
+/* ════════════════════════════════════════════════
+   FORM (🐛 Bug 1 Fixed — formData phone key)
+════════════════════════════════════════════════ */
+function lockOutcomeFieldsInMainForm(){['dcDate','fu','admitUnder6','los','deathDate','transferOutDate','transferOut','abscondDate','refuseDate','referOutDate','referDestination'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.disabled=true; el.classList.add('bg-light'); el.title='แก้ไขผ่านปุ่มจำหน่ายเท่านั้น'; } }); }
+
+function calculateLOSPreview(){
+  const admitUnder6=document.getElementById('admitUnder6').value.trim(); if(admitUnder6!==''){ document.getElementById('los').value='0'; return; }
+  const sVal=document.getElementById('inDate').value; const eVal=document.getElementById('dcDate').value||document.getElementById('deathDate').value||document.getElementById('transferOutDate').value||document.getElementById('abscondDate').value||document.getElementById('refuseDate').value||document.getElementById('referOutDate').value;
+  if(!sVal){ document.getElementById('los').value=''; return; } const monthStart=getMonthStartFromSheet(); if(!monthStart){ document.getElementById('los').value=''; return; }
+  const start=new Date(sVal); start.setHours(0,0,0,0); let end=eVal?new Date(eVal):new Date(); end.setHours(0,0,0,0); const monthEnd=new Date(monthStart.getFullYear(),monthStart.getMonth()+1,0); monthEnd.setHours(0,0,0,0);
+  let calcStart=start<monthStart?monthStart:start; let calcEnd=end>monthEnd?monthEnd:end; if(calcEnd<calcStart){ document.getElementById('los').value='0'; return; }
+  document.getElementById('los').value=String(Math.round((calcEnd-calcStart)/86400000)+1);
+}
+
+async function prepareNewForm(){
+  document.getElementById('dataForm').reset(); document.getElementById('inTime').value=`${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}`;
+  dxTagState.dx1.tags=[]; dxTagState.dx2.tags=[]; renderDxTags('dx1'); renderDxTags('dx2'); document.getElementById('dx1').value=''; document.getElementById('dx2').value=''; document.getElementById('rowId').value=''; document.getElementById('patientStatusStored').value=''; document.getElementById('inType').value='รับใหม่'; document.getElementById('addrLine1').value=''; document.getElementById('addrDistrict').value=''; document.getElementById('addrAmphoe').value=''; document.getElementById('addrProvince').value=''; document.getElementById('addrZipcode').value=''; document.getElementById('address').value='';
+  document.getElementById('patientPhone').value='';
+  document.getElementById('relativePhone1').value='';
+  document.getElementById('relativePhone2').value='';
+  if(currentSheet){ showLoader('กำลังเตรียมฟอร์มลงทะเบียน...'); try{ document.getElementById('seq').value = await callApi('getNextSeq', { sheetName: currentSheet, yearBE: currentYearBE }); } catch(e){} hideLoader(); }
+  await loadDropdownsIfNeeded(); // 🚀 ใช้ cache
+  new bootstrap.Tab(document.querySelector('button[data-bs-target="#form-pane"]')).show(); window.scrollTo(0,0);
+}
+
+function editPatient(item){
+  const r=item.rawData||[]; document.getElementById('rowId').value=item.rowId; document.getElementById('seq').value=r[COL.SEQ]||''; document.getElementById('patientStatusStored').value=r[COL.STATUS]||'รับใหม่'; document.getElementById('prefix').value=r[COL.PREFIX]||'นาย'; document.getElementById('patientName').value=r[COL.NAME]||''; document.getElementById('gender').value=r[COL.GENDER]||'ชาย';
+  const am=String(r[COL.AGE]||'').match(/(\d+)\s*ปี\s*(\d+)\s*เดือน\s*(\d+)\s*วัน/); if(am){ document.getElementById('ageYear').value=am[1]; document.getElementById('ageMonth').value=am[2]; document.getElementById('ageDay').value=am[3]; } else{ document.getElementById('ageYear').value=0; document.getElementById('ageMonth').value=0; document.getElementById('ageDay').value=0; }
+  document.getElementById('inDate').value=formatDateForInput(r[COL.ADMIT_DATE]||r[COL.TRANSFER_IN_DATE]||r[COL.REFER_IN_DATE]); document.getElementById('inTime').value=formatTimeForInput(r[COL.ADMIT_TIME]||r[COL.TRANSFER_IN_TIME]||r[COL.REFER_IN_TIME]); document.getElementById('inDept').value=r[COL.ADMIT_DEPT]||r[COL.TRANSFER_IN_DEPT]||r[COL.REFER_IN_DEPT]||''; document.getElementById('hn').value=r[COL.HN]||''; document.getElementById('an').value=r[COL.AN]||''; document.getElementById('ward').value=r[COL.WARD]||''; document.getElementById('sai').value=r[COL.SAI]||''; document.getElementById('sithi').value=r[COL.SITHI]||''; document.getElementById('dx1').value=r[COL.DX1]||''; document.getElementById('dx2').value=r[COL.DX2]||''; loadDxTagsFromHidden('dx1'); loadDxTagsFromHidden('dx2');
+  document.getElementById('address').value = r[COL.ADDRESS]||''; document.getElementById('addrLine1').value = r[COL.ADDRESS]||'';
+  document.getElementById('patientPhone').value = r[COL.PHONE]||'';
+  document.getElementById('relativePhone1').value = r[COL.RELATIVE_PHONE1]||'';
+  document.getElementById('relativePhone2').value = r[COL.RELATIVE_PHONE2]||'';
+  document.getElementById('addrDistrict').value = ''; document.getElementById('addrAmphoe').value = ''; document.getElementById('addrProvince').value = ''; document.getElementById('addrZipcode').value = '';
+  if(r[COL.ADMIT_DATE]) document.getElementById('inType').value='รับใหม่'; else if(r[COL.TRANSFER_IN_DATE]) document.getElementById('inType').value='รับย้าย'; else if(r[COL.REFER_IN_DATE]) document.getElementById('inType').value='รับ Refer';['dcDate','fu','admitUnder6','los','deathDate','transferOutDate','transferOut','abscondDate','refuseDate','referOutDate','referDestination'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  loadDropdownsIfNeeded(); // 🚀 ใช้ cache
+  new bootstrap.Tab(document.querySelector('button[data-bs-target="#form-pane"]')).show(); window.scrollTo(0,0);
+}
+
+/* ════════════════════════════════════════════════
+   DOMContentLoaded
+════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', ()=>{
+  checkAuth();
+  
+  $.Thailand({ database: 'https://earthchie.github.io/jquery.Thailand.js/jquery.Thailand.js/database/db.json', $district: $('#addrDistrict'), $amphoe: $('#addrAmphoe'), $province: $('#addrProvince'), $zipcode: $('#addrZipcode') });
+
+  document.getElementById('dataForm').addEventListener('submit', async(e)=>{
+    e.preventDefault(); 
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...';
+    btn.disabled = true;
+
+    const inT=document.getElementById('inType').value; const existingStatus=(document.getElementById('patientStatusStored').value||'').trim(); const statusToSave=(existingStatus==='ยอดยกมา')?'ยอดยกมา':(existingStatus||inT||'รับใหม่');
+    let addrParts =[]; let l1 = document.getElementById('addrLine1').value.trim(); let dt = document.getElementById('addrDistrict').value.trim(); let am = document.getElementById('addrAmphoe').value.trim(); let pv = document.getElementById('addrProvince').value.trim(); let zp = document.getElementById('addrZipcode').value.trim();
+    if(l1) addrParts.push(l1); if(dt && !dt.startsWith('ต.') && !dt.startsWith('แขวง')) dt = 'ต.' + dt; if(dt) addrParts.push(dt); if(am && !am.startsWith('อ.') && !am.startsWith('เขต')) am = 'อ.' + am; if(am) addrParts.push(am); if(pv && !pv.startsWith('จ.') && pv !== 'กรุงเทพมหานคร') pv = 'จ.' + pv; if(pv) addrParts.push(pv); if(zp) addrParts.push(zp);
+    const finalAddress = addrParts.join(' '); document.getElementById('address').value = finalAddress;
+
+    const formData={ rowId: document.getElementById('rowId').value, seq: document.getElementById('seq').value, patientStatus: statusToSave, prefix: document.getElementById('prefix').value, patientName: document.getElementById('patientName').value, gender: document.getElementById('gender').value, age: `${document.getElementById('ageYear').value} ปี ${document.getElementById('ageMonth').value} เดือน ${document.getElementById('ageDay').value} วัน`, hn: document.getElementById('hn').value, an: document.getElementById('an').value, ward: document.getElementById('ward').value, sai: document.getElementById('sai').value, sithi: document.getElementById('sithi').value, dx1: document.getElementById('dx1').value, dx2: document.getElementById('dx2').value, address: finalAddress, phone: document.getElementById('patientPhone').value, relativePhone1: document.getElementById('relativePhone1').value, relativePhone2: document.getElementById('relativePhone2').value };
+    const iD=formatDateForSheet(document.getElementById('inDate').value); const iT=document.getElementById('inTime').value; const iDep=document.getElementById('inDept').value;
+    if(inT==='รับใหม่') { formData.newMark=iD; formData.newTime=iT; formData.newDept=iDep; } else if(inT==='รับย้าย'){ formData.transferMark=iD; formData.transferTime=iT; formData.transferDept=iDep; } else { formData.referMark=iD; formData.referTime=iT; formData.referDept=iDep; }
+    
+    try{ 
+      await callApi('processData',{ targetSheet:currentSheet, yearBE:currentYearBE, formData }); 
+      showSuccess('บันทึกข้อมูลผู้ป่วยสำเร็จ'); 
+      new bootstrap.Tab(document.querySelector('button[data-bs-target="#list-pane"]')).show(); 
+      loadDashboard(true); 
+    } catch(err){ 
+      showError('เกิดข้อผิดพลาด: ' + err.message); 
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }); // <--- ปิดฟังก์ชัน submit ของ dataForm ตรงนี้ครับ
+
+  // 🚀 โหลด Dropdown
+  if (!_cachedDropdowns) {
+    callApi('getDropdownData').then(d=>{
+      _cachedDropdowns = d;
+      applyDropdowns(d);
+    });
+  }
+
+  bindTableEvents(); 
+  lockOutcomeFieldsInMainForm();
+  const disTypeEl=document.getElementById('disType'); if(disTypeEl) disTypeEl.addEventListener('change',toggleDisFields);
+  const disModalEl=document.getElementById('dischargeModal'); if(disModalEl) disModalEl.addEventListener('shown.bs.modal',()=>{ toggleDisFields(); setTimeout(()=>document.getElementById('disType')?.focus?.(),150); });
+  setInterval(()=>{ const el=document.getElementById('currentTime'); if(el) el.innerText=new Date().toLocaleString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); },1000);
+  const inTimeEl=document.getElementById('inTime'); if(inTimeEl) inTimeEl.addEventListener('blur',function(){ this.value=formatTimeForInput(this.value); });
+
+}); 
+
+
+
+  /* ════════════════════════════════════════════════
+   AUDIT LOGS
+════════════════════════════════════════════════ */
+let globalAuditLogs =[]; // เพิ่มตัวแปรสำหรับเก็บ Log อ้างอิง index
+
+async function loadAuditLogs() {
+  showLoader('กำลังโหลดประวัติการใช้งาน...');
+  try {
+    const logs = await callApi('getAuditLogs');
+    globalAuditLogs = logs; // เก็บไว้ใช้ตอนคลิก
+    const tbody = document.getElementById('auditBody');
+    
+    tbody.innerHTML = logs.map((L, index) => {
+      let badge = "bg-secondary"; 
+      if(L.action.includes("CREATE")) badge = "bg-success"; 
+      else if(L.action.includes("UPDATE")) badge = "bg-primary"; 
+      else if(L.action.includes("DISCHARGE") || L.action.includes("DC")) badge = "bg-warning text-dark"; 
+      else if(L.action.includes("DELETE")) badge = "bg-danger"; 
+      else if(L.action.includes("INCIDENT")) badge = "bg-info text-dark";
+      
+      const fDate = new Date(L.time).toLocaleString('th-TH', { dateStyle:'short', timeStyle:'short'}); 
+      
+      // ดึงข้อความคร่าวๆ มาแสดงที่ตาราง
+      let shortDetail = escapeHtml(L.detail);
+      try { const j = JSON.parse(L.detail); if(j.msg) shortDetail = j.msg + (j.changes ? ` (${j.changes.length} จุด)` : ''); } catch(e){}
+
+      return `<tr>
+        <td>${fDate}</td>
+        <td>
+          <span class="badge bg-light text-dark actor-clickable" onclick="openAuditDetail(${index})" title="คลิกเพื่อดูรายละเอียด">
+            <i class="bi bi-person-fill me-1"></i> ${escapeHtml(L.actor)}
+          </span>
+        </td>
+        <td><span class="badge ${badge}">${escapeHtml(L.action)}</span></td>
+        <td class="fw-bold text-primary">${escapeHtml(L.hn)}</td>
+        <td class="text-truncate text-muted" style="max-width:250px; font-size:13px;" title="คลิกที่ชื่อผู้ทำรายการเพื่อดูแบบเต็ม">${shortDetail}</td>
+      </tr>`;
+    }).join('');
+    
+    if(auditDT) { auditDT.destroy(); } 
+    auditDT = $('#auditTable').DataTable({ order:[[0,'desc']], responsive:true, pageLength:25, language:{url:'//cdn.datatables.net/plug-ins/1.13.4/i18n/th.json'} }); 
+    hideLoader();
+  } catch(e) { hideLoader(); showError(e.message); }
+}
+
+// ── ฟังก์ชันเปิด Modal นำเสนอรายละเอียด Audit แบบ Diff ──
+function openAuditDetail(index) {
+  const L = globalAuditLogs[index];
+  if(!L) return;
+
+  const fDate = new Date(L.time).toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'medium'});
+  let metaHtml = `
+    <div class="audit-meta-box">
+      <div class="row g-2">
+        <div class="col-12 col-md-6"><span class="text-muted"><i class="bi bi-clock"></i> เวลา:</span> <b class="text-dark">${fDate}</b></div>
+        <div class="col-12 col-md-6"><span class="text-muted"><i class="bi bi-person"></i> ผู้ทำรายการ:</span> <b class="text-primary">${escapeHtml(L.actor)}</b></div>
+        <div class="col-12 col-md-6"><span class="text-muted"><i class="bi bi-tag"></i> การกระทำ:</span> <b class="badge bg-dark">${escapeHtml(L.action)}</b></div>
+        <div class="col-12 col-md-6"><span class="text-muted"><i class="bi bi-person-badge"></i> HN / อ้างอิง:</span> <b class="text-danger">${escapeHtml(L.hn) || '-'}</b></div>
+      </div>
+    </div>
+  `;
+
+  let detailHtml = '';
+  try {
+    // พยายามแกะ JSON ถ้าฝั่ง Backend บันทึกมาเป็น JSON
+    const parsed = JSON.parse(L.detail);
+    
+    let msgHtml = '';
+    if (parsed.msg) msgHtml = `<div class="alert alert-primary border-0 py-2 px-3 fw-bold"><i class="bi bi-info-circle-fill me-2"></i>${escapeHtml(parsed.msg)}</div>`;
+
+    if (parsed.changes && parsed.changes.length > 0) {
+      detailHtml = `${msgHtml}
+        <div class="table-responsive rounded border">
+          <table class="table table-hover mb-0 diff-table">
+            <thead>
+              <tr><th width="25%">หัวข้อที่แก้ไข</th><th width="37%">ข้อมูลเดิม (Before)</th><th width="38%">ข้อมูลใหม่ (After)</th></tr>
+            </thead>
+            <tbody>`;
+      parsed.changes.forEach(c => {
+        const fromStr = c.from ? escapeHtml(c.from) : '<span class="text-muted fst-italic">-- ว่าง --</span>';
+        const toStr = c.to ? escapeHtml(c.to) : '<span class="text-muted fst-italic">-- ว่าง --</span>';
+        detailHtml += `<tr>
+          <td class="text-secondary fw-bold">${escapeHtml(c.field)}</td>
+          <td><span class="diff-from">${fromStr}</span></td>
+          <td><span class="diff-to">${toStr}</span></td>
+        </tr>`;
+      });
+      detailHtml += `</tbody></table></div>`;
+    } else if (parsed.msg) {
+      detailHtml = msgHtml;
+    } else {
+      detailHtml = `<pre class="bg-light p-3 rounded" style="white-space: pre-wrap; font-size: 13px;">${escapeHtml(JSON.stringify(parsed, null, 2))}</pre>`;
+    }
+  } catch(e) {
+    // ถ้าไม่ใช่ JSON (เช่น Log เก่าที่บันทึกแค่ text ธรรมดา)
+    detailHtml = `<div class="alert alert-light border text-secondary"><i class="bi bi-body-text me-2"></i>${escapeHtml(L.detail)}</div>`;
+  }
+
+  document.getElementById('auditDetailContent').innerHTML = metaHtml + detailHtml;
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('auditDetailModal')).show();
+}
+
+async function checkAN(){ formatHNAN('an'); const anValue=document.getElementById('an').value, rowId=document.getElementById('rowId').value; if(!rowId&&anValue){ try{ const isDup=await callApi('checkDuplicateAN',{ targetSheet:currentSheet, yearBE:currentYearBE, an:anValue }); if(isDup) showError(`พบ AN ซ้ำ! AN ${anValue} มีอยู่แล้ว`); } catch(err){} } }
+
+/* ════════════════════════════════════════════════
+   NOTE: ส่วนที่เหลือ (DISCHARGE, CLOSE MONTH, CROSS YEAR, 
+   QA CARDS, REPORTS, DX TAGS ฯลฯ) ยังคงเหมือนเดิมทั้งหมด
+   จากไฟล์ Document 1 (ต้นฉบับ) — ไม่มีการเปลี่ยนแปลง
+   
+   ให้ copy ส่วนที่เหลือจาก Document 1 มาต่อจากจุดนี้ได้เลย
+   (ตั้งแต่ DISCHARGE section จนถึงท้ายไฟล์)
+════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   DISCHARGE
+════════════════════════════════════════════════ */
+async function dischargeUI(item){
+  disItem=item; const r=item.rawData||[]; document.getElementById('disRowId').value=item.rowId;
+  const existingDate=formatDateForInput(r[COL.DC_DATE])||formatDateForInput(r[COL.TRANSFER_OUT_DATE])||formatDateForInput(r[COL.REFER_OUT_DATE])||formatDateForInput(r[COL.DEATH_DATE])||formatDateForInput(r[COL.ABSCOND_DATE])||formatDateForInput(r[COL.REFUSE_DATE])||new Date().toISOString().split('T')[0]; document.getElementById('disDate').value=existingDate;
+  let existingType=''; if(r[COL.DC_DATE]) existingType='dc'; else if(r[COL.TRANSFER_OUT_DATE]) existingType='transfer'; else if(r[COL.REFER_OUT_DATE]) existingType='refer'; else if(r[COL.DEATH_DATE]) existingType='death'; else if(r[COL.ABSCOND_DATE]) existingType='abscond'; else if(r[COL.REFUSE_DATE]) existingType='refuse';
+  document.getElementById('disType').value=existingType; document.getElementById('disFU').value=r[COL.FU]||''; document.getElementById('disWaitMin').value=r[COL.WAIT_TIME]||'';
+  if(document.getElementById('transferDept')) document.getElementById('transferDept').value=r[COL.TRANSFER_OUT]||''; if(document.getElementById('referDest')) document.getElementById('referDest').value=r[COL.REFER_DEST]||'';
+  toggleDisFields(); bootstrap.Modal.getOrCreateInstance(document.getElementById('dischargeModal')).show();
+}
+function toggleDisFields(){ const t=document.getElementById('disType').value; document.getElementById('waitBox').style.display =(t==='dc')?'block':'none'; document.getElementById('fuBox').style.display =(t==='dc')?'block':'none'; document.getElementById('transferDeptBox').style.display=(t==='transfer')?'block':'none'; document.getElementById('referDestBox').style.display =(t==='refer')?'block':'none'; }
+async function saveDischarge(){
+  const rowId=document.getElementById('disRowId').value; const type =document.getElementById('disType').value; const date =document.getElementById('disDate').value; const time =document.getElementById('disTime').value; const waitMin=document.getElementById('disWaitMin').value;
+  if(!type) return showError('กรุณาเลือกประเภทการจำหน่าย'); if(!date) return showError('กรุณาเลือกวันที่'); if(!time) return showError('กรุณาระบุเวลา');
+  const d=formatDateForSheet(date); const keepStatus=(disItem?.rawData?.[COL.STATUS]||disItem?.patientStatus||'').trim();
+  const formData={ rowId, patientStatus:keepStatus, dcDate:'', transferOutDate:'', transferOut:'', referOutDate:'', referDestination:'', deathDate:'', abscondDate:'', refuseDate:'', fu:'', outTime:time, waitTime:waitMin };
+  if(type==='dc') { formData.dcDate=d; formData.fu=document.getElementById('disFU').value; } if(type==='transfer'){ formData.transferOutDate=d; formData.transferOut=document.getElementById('transferDept')?.value||''; } if(type==='refer') { formData.referOutDate=d; formData.referDestination=document.getElementById('referDest')?.value||''; } if(type==='death') formData.deathDate=d; if(type==='abscond') formData.abscondDate=d; if(type==='refuse') formData.refuseDate=d;
+  const btn = document.querySelector('#dischargeModal .btn-primary'); const originalText = btn.innerHTML; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>กำลังบันทึก...'; btn.disabled = true;
+  try{ await callApi('processData',{ targetSheet:currentSheet, yearBE:currentYearBE, formData }); bootstrap.Modal.getInstance(document.getElementById('dischargeModal'))?.hide(); showSuccess('จำหน่ายผู้ป่วยเรียบร้อยแล้ว'); loadDashboard(true); } catch(err){ showError(err.toString()); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+}
+async function confirmCancelDischarge(item){
+  if(!await appConfirm('ยืนยันยกเลิกจำหน่าย?', `ต้องการดึง ${item.patientName} กลับมา Active?`, 'warning', 'ใช่, ยกเลิกจำหน่าย', 'btn-danger')) return;
+  notyf.success('กำลังยกเลิกการจำหน่าย...'); try{ await callApi('cancelDischarge',{ targetSheet:currentSheet, yearBE:currentYearBE, rowId:item.rowId }); showSuccess('ผู้ป่วยกลับมา Active แล้ว'); loadDashboard(true); } catch(err){ showError(err.toString()); }
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Enter'){ const modal=document.getElementById('dischargeModal'); if(modal&&modal.classList.contains('show')){ e.preventDefault(); saveDischarge(); } } });
+
+/* ════════════════════════════════════════════════
+   CLOSE MONTH
+════════════════════════════════════════════════ */
+async function closeMonthUI(){
+  try{
+    if(!currentSheet){
+      if(!await appConfirm('เริ่มเดือนแรก?', 'ระบบจะสร้างชีทเดือนปัจจุบันจาก Template', 'question', 'สร้างเดือนแรก', 'btn-primary')) return;
+      showLoader('กำลังสร้างฐานข้อมูลเดือนแรก...'); const result=await callApi('initFirstMonth',{ yearBE:currentYearBE }); hideLoader(); await initSheets(); showSuccess('สร้างชีทเดือนแรกสำเร็จ'); return;
+    }
+    const bedCountStr = await appPrompt('ปิดยอดเดือน', 'ระบบจะสร้าง Snapshot → สร้างชีทเดือนถัดไป → ย้ายยอดค้างเป็น "ยอดยกมา" และล็อกชีทเดือนเก่า', 'จำนวนเตียงที่เปิดจริง', 24); if(bedCountStr===null) return; const bedCount = Number(bedCountStr);
+    if(!await appConfirm('ยืนยันปิดยอด?', `เดือน ${currentSheet} จะถูกล็อกและไม่สามารถแก้ไขได้อีก`, 'warning', 'ยืนยันปิดยอด', 'btn-danger')) return;
+    showLoader('กำลังประมวลผลปิดยอดเดือน... (อาจใช้เวลาสักครู่)'); const result=await callApi('closeMonthAction',{ currentSheetName:currentSheet, yearBE:currentYearBE, bedCount:bedCount||0 }); hideLoader();
+    if(result.isNewYear){ await appConfirm(`🎉 ขึ้นปีใหม่ ${result.nextYearBE}!`, `ระบบสร้าง DB_${result.nextYearBE} ให้อัตโนมัติแล้ว`, 'success', 'รับทราบ', 'btn-success', false); }
+    await initSheets(); if(result.nextSheet){ currentYearBE=result.nextYearBE; document.getElementById('yearSelector').value=result.nextYearBE; await loadSheetSelector(); const sel=document.getElementById('sheetSelector'); if([...sel.options].some(o=>o.value===result.nextSheet)){ currentSheet=result.nextSheet; sel.value=result.nextSheet; } loadDashboard(); }
+    if(!result.isNewYear) showSuccess('ปิดยอดเดือนสำเร็จ');
+  } catch(err){ hideLoader(); showError(err.toString()); }
+}
+
+/* ════════════════════════════════════════════════
+   CROSS YEAR REPORT
+════════════════════════════════════════════════ */
+async function showCrossYearReport(){
+  showLoader('กำลังประมวลผลข้อมูลข้ามปี...'); try{ const[allRows, years]=await Promise.all([ callApi('getCrossYearSummary',{ years:null }), callApi('getYearList') ]); hideLoader(); renderCrossYearReport(allRows, years); bootstrap.Modal.getOrCreateInstance(document.getElementById('crossYearModal')).show(); } catch(err){ hideLoader(); showError(err.toString()); }
+}
+function renderCrossYearReport(rows, years){
+  const byYear={}; rows.forEach(r=>{ const y=String(r.yearBE||''); if(!byYear[y]) byYear[y]=[]; byYear[y].push(r); }); const COLORS=['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+  document.getElementById('crossYearFilters').innerHTML = (years||[]).map((y,i)=>`<label class="d-flex align-items-center gap-2" style="cursor:pointer;"><input type="checkbox" checked onchange="filterCrossYear()" data-year="${y}" style="accent-color:${COLORS[i%COLORS.length]}"><span class="year-badge" style="border-color:${COLORS[i%COLORS.length]};color:${COLORS[i%COLORS.length]};background:${COLORS[i%COLORS.length]}18">${y}</span></label>`).join('');
+  window._crossYearData={ rows, byYear, colors:COLORS, years:years||[] }; buildCrossYearTable(rows, byYear, COLORS);
+}
+function filterCrossYear(){ const { rows, byYear, colors, years }=window._crossYearData; const checked=[...document.querySelectorAll('#crossYearFilters input[type=checkbox]:checked')].map(el=>Number(el.dataset.year)); const filtered=rows.filter(r=>checked.includes(Number(r.yearBE))); const filteredByYear={}; filtered.forEach(r=>{ const y=String(r.yearBE||''); if(!filteredByYear[y]) filteredByYear[y]=[]; filteredByYear[y].push(r); }); buildCrossYearTable(filtered, filteredByYear, colors); }
+function buildCrossYearTable(rows, byYear, colors){
+  if(!rows||rows.length===0){ document.getElementById('crossYearResult').innerHTML='<div class="text-center text-muted p-4">ยังไม่มีข้อมูล MonthlySummary</div>'; return; }
+  const yearKeys=Object.keys(byYear).sort(); const colorMap={}; yearKeys.forEach((y,i)=>colorMap[y]=colors[i%colors.length]);
+  const kpiHtml=yearKeys.map(y=>{ const yRows=byYear[y]; const totalIn=yRows.reduce((s,r)=>s+safeInt(r.inTotal),0); const totalDC=yRows.reduce((s,r)=>s+safeInt(r.outTotal),0); const totalPD=yRows.reduce((s,r)=>s+safeInt(r.patientDays),0); const avgBOR=yRows.filter(r=>r.bor).reduce((s,r)=>s+parseFloat(r.bor||0),0)/(yRows.filter(r=>r.bor).length||1); const c=colorMap[y]; return `<div class="col-6 col-md-3"><div class="kpi-card" style="border-top:3px solid ${c}"><div class="kpi-label">ปี ${y}</div><div class="kpi-value" style="color:${c}">${totalIn}</div><div class="kpi-label">รับเข้าทั้งหมด</div><hr class="my-2"><div class="d-flex justify-content-between small"><span>จำหน่าย: <b>${totalDC}</b></span><span>วันนอน: <b>${totalPD}</b></span></div><div class="small mt-1">BOR เฉลี่ย: <b>${fmt2(avgBOR)}%</b></div></div></div>`; }).join('');
+  const MONTH_LABELS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; const monthData={}; rows.forEach(r=>{ const mn=String(r.monthNo||''); if(!monthData[mn]) monthData[mn]={}; monthData[mn][String(r.yearBE)]=r; });
+  const tableRows=[1,2,3,4,5,6,7,8,9,10,11,12].map(mn=>{ const cells=yearKeys.map(y=>{ const r=monthData[String(mn)]?.[y]; if(!r) return `<td class="text-muted text-center">-</td><td class="text-muted text-center">-</td>`; const bor=parseFloat(r.bor||0); const borColor=bor>=80?'text-success fw-bold':bor>=60?'text-warning fw-bold':'text-danger'; return `<td class="text-center">${safeInt(r.inTotal)}</td><td class="text-center ${borColor}">${fmt2(bor)}%</td>`; }).join(''); return `<tr><td class="fw-bold">${MONTH_LABELS[mn-1]}</td>${cells}</tr>`; }).join('');
+  const headerCells=yearKeys.map(y=>`<th colspan="2" style="color:${colorMap[y]}">ปี ${y}<br><small style="font-weight:400">รับเข้า / BOR</small></th>`).join('');
+  document.getElementById('crossYearResult').innerHTML=`<div class="row g-3 mb-4">${kpiHtml}</div><div class="mb-3"><canvas id="chartCrossYear" style="max-height:250px;"></canvas></div><div class="table-wrap"><table class="table table-sm table-bordered"><thead class="table-light"><tr><th>เดือน</th>${headerCells}</tr></thead><tbody>${tableRows}</tbody></table></div>`;
+  setTimeout(()=>{ const el=document.getElementById('chartCrossYear'); if(!el) return; if(window._crossYearChart) window._crossYearChart.destroy(); const datasets=yearKeys.map(y=>({ label:'ปี '+y, data:[1,2,3,4,5,6,7,8,9,10,11,12].map(mn=>{ const r=monthData[String(mn)]?.[y]; return r?safeInt(r.inTotal):null; }), borderColor:colorMap[y], backgroundColor:colorMap[y]+'33', tension:0.4, fill:true, borderWidth:2, pointRadius:4 })); window._crossYearChart=new Chart(el,{ type:'line', data:{ labels:MONTH_LABELS, datasets }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top' }, title:{ display:true, text:'จำนวนผู้ป่วยรับเข้ารายเดือน' } }, scales:{ y:{ beginAtZero:true } } } }); }, 200);
+}
+
+/* ════════════════════════════════════════════════
+   QA CARDS v3 ENGINE
+════════════════════════════════════════════════ */
+let qaIncidents=[], qaDeviceTags=[], qaReport=null, qaOpenForms={};
+function switchQaTab(n){[2,3].forEach(function(i){var el=document.getElementById('qaPane'+i);if(el) el.style.display=(i===n)?'':'none';document.getElementById('qaTab'+i+'Btn')?.classList.toggle('active',i===n);});if(n===2) loadQaCards();}
+function openQaTab(){switchQaTab(2);}
+
+async function loadQaCards() {
+  if (!currentSheet) return;
+  document.getElementById('qaCardMonthLabel').innerText = 'เดือน: ' + currentSheet;
+  document.getElementById('qaCardGrid').innerHTML = '<div class="loading-spinner"><div class="spinner-glow" style="width:2rem;height:2rem;"></div> <span class="ms-3">กำลังโหลด...</span></div>';
+  
+  try {
+    var results = await Promise.all([
+      callApi('getQualityReport', { sheetName: currentSheet, yearBE: currentYearBE }),
+      callApi('getIncidentsByMonth', { sheetName: currentSheet }),
+      callApi('getDeviceTagsByMonth', { sheetName: currentSheet }).catch(function() { return []; })
+    ]);
+    
+    qaReport = results[0];
+    
+    // ✅ จุดที่แก้ไข: กรอง incident ให้เหลือเฉพาะเดือนปัจจุบันเท่านั้น
+    qaIncidents = (results[1] || []).filter(function(x) {
+        return String(x.sheetName).trim() === String(currentSheet).trim();
+    });
+    
+    // ✅ จุดที่แก้ไข: กรอง deviceTags ให้เหลือเฉพาะเดือนปัจจุบัน (ถ้ามี)
+    qaDeviceTags = (results[2] || []).filter(function(t) {
+        return String(t.sheetName || "").trim() === String(currentSheet).trim();
+    });
+
+    document.getElementById('qaCardPD').innerText = 'วันนอน: ' + (qaReport.patientDays || 0);
+    document.getElementById('qaCardPT').innerText = 'ผู้ป่วย: ' + (qaReport.totalPatients || 0);
+    
+    renderAllCards();
+  } catch(err) {
+    document.getElementById('qaCardGrid').innerHTML = '<div class="text-danger p-3">' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function renderAllCards(){
+  document.getElementById('qaCardGrid').classList.remove('qc-grid');
+  var pd=qaReport?.patientDays||0,k=qaReport?.indicators||{}; var byType=function(t){return qaIncidents.filter(function(x){return x.eventType===t;});}; var sumVal=function(t){return byType(t).reduce(function(s,x){return s+(parseFloat(x.value)||0);},0);}; var r1k=function(n){return pd>0?(n/pd*1000):0;}; var fmtR=function(n){return n.toFixed(1);}; var rCol=function(v,th){return v>=th?'#dc2626':v>0?'#d97706':'#059669';};
+  var ventTags=qaDeviceTags.filter(function(t){return t.deviceType==='VENT';}),icdTags=qaDeviceTags.filter(function(t){return t.deviceType==='ICD';}); var ventDays=ventTags.reduce(function(s,t){return s+(t.autoCalcDays||0);},0),icdDays=icdTags.reduce(function(s,t){return s+(t.autoCalcDays||0);},0);
+  var vPU = sumVal('PRESSURE_ULCER'), vFall = sumVal('FALL'), vMedErr = sumVal('MED_ERROR'); var vET = sumVal('UNPLANNED_ET'), vICD = sumVal('ICD_DISLODGE'); var vCPR = sumVal('UNPLANNED_CPR'), vICU = sumVal('UNPLANNED_ICU'), vWP = sumVal('WRONG_PROCEDURE'), vWS = sumVal('WRONG_SURGERY'), vWT = sumVal('WRONG_TRANSFUSION'); var vSevere = vCPR + vICU + vWP + vWS + vWT;
+  var phlG=function(g){return qaIncidents.filter(function(x){return x.eventType==='PHLEBITIS'&&String(x.grade)===String(g);}).length;}; var phlTotal=phlG(1)+phlG(2)+phlG(3)+phlG(4); var phlColors=['','#86efac','#fcd34d','#fdba74','#fca5a5'];
+  var nA = ((k.k25_note_qty_pct||0) + (k.k25_note_qlt_pct||0)) / 2; var avgW = k.k26_avg_wait_min||0; var ghi=byType('GHI'), ghiLv=ghi.length>0?(ghi[ghi.length-1].level||'-'):'-';
+
+  var sumBox = function(lbl, val, cCls) { return `<div class="col-6 col-md-3"><div class="qa-summary-box"><div class="qa-summary-label">${lbl}</div><div class="qa-summary-val ${cCls}">${val}</div></div></div>`; };
+  var html = `<div class="row g-2 mb-4">${sumBox('แผลกดทับ', vPU, vPU>0?'danger':'success')}${sumBox('หกล้ม', vFall, vFall>0?'warning':'success')}${sumBox('ยาคลาดเคลื่อน', vMedErr, vMedErr>0?'danger':'success')}${sumBox('ท่อ+สายหลุด', vET+vICD, (vET+vICD)>0?'warning':'success')}${sumBox('อุบัติการณ์ร้ายแรง', vSevere, vSevere>0?'danger':'success')}${sumBox('Phlebitis', phlTotal, phlTotal>0?'warning':'success')}${sumBox('บันทึกพยาบาล', nA.toFixed(0)+'%', nA>=80?'success':'warning')}${sumBox('รอ D/C', avgW.toFixed(0)+' นาที', avgW>60?'warning':'success')}</div>`;
+
+  html += `<div class="accordion qa-accordion" id="qaAccordion">`;
+  var mkAcc = function(id, icon, title, content, color='#0d6efd') { return `<div class="accordion-item" style="border-left-color: ${color}"><h2 class="accordion-header" id="hd_${id}"><button class="accordion-button collapsed d-flex justify-content-between w-100" type="button" data-bs-toggle="collapse" data-bs-target="#col_${id}"><span><span style="font-size:18px; margin-right:8px;">${icon}</span> ${title}</span></button></h2><div id="col_${id}" class="accordion-collapse collapse" data-bs-parent="#qaAccordion"><div class="accordion-body">${content}</div></div></div>`; };
+  var mkInner = function(fk, body, types, nG, nL) { var o = qaOpenForms[fk]; return `${body}<button class="qc-add-btn ${o?'open':''}" onclick="toggleQaForm('${fk}')" style="margin-top:16px;">${o?'▲ ซ่อนฟอร์มบันทึก':'<span style="font-size:15px">+</span> เพิ่มเหตุการณ์'}</button><div id="qaForm_${fk}" style="display:${o?'block':'none'}; margin-top:8px;">${mkForm(fk, types, nG, nL)}</div>`; };
+
+  var b11_14 = `<div class="d-flex gap-2 flex-wrap mb-3">${sb('Vent',ventTags.length,'ราย','#2563eb','#dbeafe')}${sb('Vent Days',ventDays,'วัน','#2563eb','#eff6ff')}${sb('ICD',icdTags.length,'ราย','#7c3aed','#f5f3ff')}${sb('ICD Days',icdDays,'วัน','#7c3aed','#faf5ff')}</div>` + irow('11','Unplanned ET tube',sumVal('UNPLANNED_ET'),'ครั้ง',null,rCol(sumVal('UNPLANNED_ET'),1)) + itbl(byType('UNPLANNED_ET')) + irow('13','ICD Line หลุด',sumVal('ICD_DISLODGE'),'ครั้ง',fmtR(r1k(sumVal('ICD_DISLODGE')))+'/1000',rCol(sumVal('ICD_DISLODGE'),1)) + itbl(byType('ICD_DISLODGE')) + `<div class="qc-divider mt-3">VENTILATOR (Device Tracking)</div>` + dtbl(ventTags,'#2563eb') + `<div class="qc-divider mt-2">ICD LINE (Device Tracking)</div>` + dtbl(icdTags,'#7c3aed');
+  html += mkAcc('acc11', '🛡️', 'ข้อ 11-14: ท่อและสาย (ET, ICD, Vent)', mkInner('s1', b11_14,['UNPLANNED_ET','ICD_DISLODGE'], false, false), '#2563eb');
+
+  var b15 = `<div class="qa-status-inline" style="background:${r1k(vPU)<5?'#ecfdf5':'#fef2f2'}; border:1px solid ${r1k(vPU)<5?'#6ee7b7':'#fca5a5'};">จำนวนแผล: <span style="font-size:18px; color:${r1k(vPU)<5?'#059669':'#dc2626'};">${vPU}</span> | อัตรา ${fmtR(r1k(vPU))}/1000</div>` + itbl(byType('PRESSURE_ULCER'), true);
+  var t15 = `ข้อ 15: แผลกดทับ (Pressure Ulcer) <button class="btn btn-sm btn-outline-danger ms-auto rounded-pill" onclick="event.stopPropagation(); printPressureUlcerReport();" style="font-size:11px; padding:2px 10px; z-index:10; position:relative;"><i class="bi bi-printer"></i> พิมพ์ใบแผลกดทับ</button>`;
+  html += mkAcc('acc15', '⚠️', t15, mkInner('s15', b15, ['PRESSURE_ULCER'], true, true), '#dc2626');
+
+  var b16 = `<div class="qa-status-inline" style="background:${r1k(vFall)<2?'#ecfdf5':'#fffbeb'}; border:1px solid ${r1k(vFall)<2?'#6ee7b7':'#fcd34d'};">จำนวนหกล้ม: <span style="font-size:18px; color:${r1k(vFall)<2?'#059669':'#d97706'};">${vFall}</span> | อัตรา ${fmtR(r1k(vFall))}/1000</div>` + itbl(byType('FALL'), false, true);
+  html += mkAcc('acc16', '⚠️', 'ข้อ 16: พลัดตกหกล้ม (Fall)', mkInner('s16', b16, ['FALL'], false, false), '#d97706');
+
+  var b17 = `<div class="qa-status-inline" style="background:${r1k(vMedErr)<5?'#ecfdf5':'#fef2f2'}; border:1px solid ${r1k(vMedErr)<5?'#6ee7b7':'#fca5a5'};">จำนวนครั้ง: <span style="font-size:18px; color:${r1k(vMedErr)<5?'#059669':'#dc2626'};">${vMedErr}</span> | อัตรา ${fmtR(r1k(vMedErr))}/1000</div>` + itbl(byType('MED_ERROR'), false, false);
+  html += mkAcc('acc17', '💊', 'ข้อ 17: คลาดเคลื่อนยา (Med Error)', mkInner('s17', b17, ['MED_ERROR'], false, false), '#dc2626');
+
+  var b18 = `<div class="d-flex align-items-center gap-3 mb-3"><div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff">${escapeHtml(ghiLv)}</div><div><b>ระดับ ${escapeHtml(ghiLv)}</b><div style="font-size:10px;color:#64748b">ล่าสุด</div></div></div>` + itbl(ghi, false, true);
+  html += mkAcc('acc18', '📋', 'ข้อ 18: GHI อุบัติการณ์เฉพาะโรค', mkInner('s18', b18, ['GHI'], false, true), '#0891b2');
+
+  var i19=[{k:'UNPLANNED_CPR',n:'19',l:'Unplanned CPR'},{k:'UNPLANNED_ICU',n:'20',l:'Unplanned ICU'},{k:'WRONG_PROCEDURE',n:'21',l:'หัตถการผิด'},{k:'WRONG_SURGERY',n:'22',l:'ผ่าตัดผิด'},{k:'WRONG_TRANSFUSION',n:'23',l:'เลือดผิดคน'}];
+  var b19_23 = i19.map(function(x){return irow(x.n,x.l,sumVal(x.k),'ครั้ง',null,rCol(sumVal(x.k),1))+(sumVal(x.k)>0?itbl(byType(x.k)):'');}).join('');
+  html += mkAcc('acc19', '🚨', 'ข้อ 19-23: หมวดอุบัติการณ์ร้ายแรง', mkInner('s19', b19_23, i19.map(x=>x.k), false, false), '#991b1b');
+
+  var b24 = `<div class="d-flex gap-2 mb-3">${sb('รวม',phlTotal,'','#d97706','#fffbeb')}${sb('อัตรา',fmtR(r1k(phlTotal)),'/1000','#d97706')}</div><div class="qc-phl-bar mb-2">${[1,2,3,4].map(function(g){return phlG(g)>0?'<div class="qc-phl-seg" style="width:'+(phlG(g)/Math.max(phlTotal,1)*100)+'%;background:'+phlColors[g]+'">'+phlG(g)+'</div>':'';}).join('')}</div><div class="d-flex gap-2 flex-wrap mb-3">${[1,2,3,4].map(function(g){return '<span style="font-size:11px;font-weight:800"><span style="display:inline-block;width:8px;height:8px;border-radius:99px;background:'+phlColors[g]+'"></span> G'+g+':'+phlG(g)+'</span>';}).join('')}</div>` + itbl(byType('PHLEBITIS'), true);
+  html += mkAcc('acc24', '💉', 'ข้อ 24: Phlebitis', mkInner('s24', b24, ['PHLEBITIS'], true, false), '#d97706');
+
+  var b25 = `<div class="d-flex gap-4 align-items-center justify-content-center flex-wrap py-3"><div id="gaugeQty" class="gauge-wrap"></div><div id="gaugeQlt" class="gauge-wrap"></div><div style="text-align:center"><div style="font-size:11px;color:#64748b;font-weight:700">คะแนนเฉลี่ยรวม</div><div style="font-size:36px;font-weight:900;color:${nA>=80?'#059669':'#d97706'}">${nA.toFixed(0)}%</div></div></div>`;
+  html += mkAcc('acc25', '📝', 'ข้อ 25: สถิติบันทึกทางการพยาบาล', b25, '#059669'); 
+
+  var b26 = `<div class="d-flex flex-column align-items-center mb-2 py-2"><div style="padding:8px 20px;border-radius:12px;background:${avgW>90?'#fef2f2':avgW>60?'#fffbeb':'#ecfdf5'};border:1.5px solid ${avgW>90?'#fca5a5':avgW>60?'#fcd34d':'#6ee7b7'}; text-align:center;"><div style="font-size:11px;color:#64748b;font-weight:700">เวลารอเฉลี่ย</div><div style="font-size:28px;font-weight:900;color:${avgW>90?'#dc2626':avgW>60?'#d97706':'#059669'}">${avgW.toFixed(0)} <span style="font-size:12px;color:#64748b">นาที</span></div></div><div style="font-size:11px;color:#64748b;font-weight:700;margin-top:8px">🟢 ต่ำกว่าเฉลี่ย 🟡 ใกล้เฉลี่ย 🔴 เกินเฉลี่ย 30%</div></div><div id="waitScatter" style="width:100%;min-height:140px;"></div>`;
+  html += mkAcc('acc26', '⏱️', 'ข้อ 26: รอคอยกลับบ้าน', b26, '#0891b2');
+
+  var b27 = `<div class="d-flex gap-3 flex-wrap py-2">${sb('Refer IN',k.k27_refer_in||0,'ราย','#2563eb','#dbeafe')}${sb('Refer OUT',k.k27_refer_out||0,'ราย','#dc2626','#fef2f2')}${sb('Refer Back',k.k27_refer_back||0,'ราย','#d97706','#fffbeb')}${sb('Day Care',k.k27_daycare||0,'ราย','#059669','#ecfdf5')}</div>`;
+  html += mkAcc('acc27', '🔄', 'ข้อ 27: Refer / Day Care', b27, '#7c3aed');
+
+  html += `</div>`; 
+  document.getElementById('qaCardGrid').innerHTML = html;
+
+  setTimeout(function(){ renderGauge('gaugeQty',k.k25_note_qty_pct||0,'เชิงปริมาณ','#2563eb'); renderGauge('gaugeQlt',k.k25_note_qlt_pct||0,'เชิงคุณภาพ','#059669'); renderWaitScatter(); }, 100);
+}
+
+function sb(l,v,u,c,ac){return '<div class="qc-stat" '+(ac?'style="background:'+ac+'"':'')+'><div class="qc-stat-label">'+l+'</div><div class="qc-stat-val" style="color:'+c+'">'+(v!=null?v:'-')+(u?'<span style="font-size:9px;color:#64748b">'+u+'</span>':'')+'</div></div>';}
+function irow(no,l,v,u,rate,vc){return '<div class="d-flex justify-content-between align-items-center" style="padding:5px 0;border-bottom:1.5px solid rgba(15,23,42,.05)"><span style="font-size:12px;font-weight:800"><span style="color:#94a3b8;margin-right:4px">'+no+'</span>'+escapeHtml(l)+'</span><div class="d-flex align-items-center gap-2"><span style="font-size:15px;font-weight:900;color:'+(vc||'#0f172a')+'">'+(v!=null?v:'-')+' <span style="font-size:10px;color:#64748b">'+(u||'')+'</span></span>'+(rate?'<span class="qc-pill" style="color:#d97706;background:#d9770612;border:1px solid #d9770620">'+rate+'</span>':'')+'</div></div>';}
+function itbl(items,sG,sL){
+  if(!items||!items.length) return '<div class="qc-empty">— ยังไม่มีรายการ —</div>';
+  var gc={'1':'#fca5a5','2':'#f87171','3':'#ef4444','4':'#dc2626','DTI':'#7f1d1d','Unstageable':'#1c1917','MDRPI':'#fbbf24','MDRSI':'#fbbf24','IAD':'#f472b6','IAD Cat I':'#f472b6','IAD Cat II':'#db2777','MMPI':'#a78bfa'};
+  return '<table class="qc-inc-table"><thead><tr><th>ชื่อผู้ป่วย</th><th>HN</th><th style="text-align:center">วันที่</th>'+(sG?'<th style="text-align:center">Grade</th>':'')+(sL?'<th style="text-align:center">Level</th>':'')+'<th>รายละเอียด / หมายเหตุ</th><th style="width:28px"></th></tr></thead><tbody>'+items.map(function(x){
+    var nm=x.name||(x.hn?'HN:'+x.hn:'-'); var gText=x.grade||'-'; var gColor=gc[gText]||'#94a3b8';
+    var gBadge=x.grade?'<span class="qc-g" style="width:auto; padding:0 6px; background:'+gColor+'; color:#fff;">'+gText+'</span>':'-';
+    var noteHtml='<td style="color:#475569;font-size:11px;max-width:220px;white-space:normal;line-height:1.4;">'+escapeHtml(x.note||'-')+'</td>';
+    return '<tr><td style="font-weight:700">'+escapeHtml(nm)+'</td><td style="color:#64748b;font-size:11px">'+escapeHtml(x.hn||'')+'</td><td style="text-align:center;font-weight:700;font-size:11px">'+escapeHtml(x.eventDate||'')+'</td>'+(sG?'<td style="text-align:center">'+gBadge+'</td>':'')+(sL?'<td style="text-align:center">'+(x.level?'<span class="qc-pill" style="color:#0891b2;background:#0891b212;border:1px solid #0891b220">'+escapeHtml(x.level)+'</span>':'-')+'</td>':'')+noteHtml+'<td><button onclick="delQaInc('+x.id+')" style="border:none;background:transparent;color:#fca5a5;cursor:pointer;font-size:13px">✕</button></td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function dtbl(tags,color){if(!tags||!tags.length) return '<div class="qc-empty">ยังไม่มี</div>';return '<table class="qc-inc-table"><thead><tr><th>ผู้ป่วย</th><th>HN</th><th style="text-align:center">เริ่ม</th><th style="text-align:center">ถอด</th><th style="text-align:center">วัน</th></tr></thead><tbody>'+tags.map(function(t){return '<tr><td style="font-weight:700">'+escapeHtml(t.patientName||t.name||t.hn||'-')+'</td><td style="color:#64748b;font-size:11px">'+escapeHtml(t.hn||'')+'</td><td style="text-align:center;font-size:11px">'+escapeHtml(t.startDate||'')+'</td><td style="text-align:center;font-size:11px">'+(t.endDate||'<span style="color:#d97706;font-weight:800">ยังใส่</span>')+'</td><td style="text-align:center"><span class="qc-pill" style="color:'+color+';background:'+color+'12;border:1px solid '+color+'20">'+(t.autoCalcDays||0)+' วัน</span></td></tr>';}).join('')+'</tbody></table>';}
+
+function mkForm(fk,types,nG,nL){
+  var labels={UNPLANNED_ET:'Unplanned ET',ICD_DISLODGE:'ICD หลุด',PRESSURE_ULCER:'แผลกดทับ',FALL:'หกล้ม',MED_ERROR:'ยาคลาดเคลื่อน',GHI:'GHI',UNPLANNED_CPR:'Unplanned CPR',UNPLANNED_ICU:'Unplanned ICU',WRONG_PROCEDURE:'หัตถการผิด',WRONG_SURGERY:'ผ่าตัดผิด',WRONG_TRANSFUSION:'เลือดผิดคน',PHLEBITIS:'Phlebitis'};
+  var opts=(types||[]).map(function(t){return '<option value="'+t+'">'+(labels[t]||t)+'</option>';}).join('');
+  var puHtml='';
+  if(types.includes('PRESSURE_ULCER')){
+    var locOpts=['1) Occiput','2) Ear','3) Scapula','4) Spinous Process','5) Shoulder','6) Elbow','7) Iliac Crest','8) Sacrum/Coccyx','9) Ischial Tuberosity','10) Trochanter','11) Knee','12) Malleolus','13) Heel','14) Toe','15) Other'].map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
+    var gradeOpts=['1','2','3','4','DTI','Unstageable','MDRSI','IAD Cat I','IAD Cat II','MMPI'].map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
+    var exudateOpts=['ไม่มีเลย','เล็กน้อย (≤25%)','ปานกลาง (>25%)','มาก (>75%)'].map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
+    var bedOpts=['Necrotic tissue (eschar)','Slough','Granulation tissue','Epithelial tissue','Closed'].map(function(x){return '<option value="'+x+'">'+x+'</option>';}).join('');
+    puHtml='<div id="qf_'+fk+'_pu_box" class="col-12 mt-2" style="display:'+(types[0]==='PRESSURE_ULCER'?'block':'none')+'; background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #cbd5e1;">'+
+      '<div style="font-size:11.5px; font-weight:900; color:#0f172a; margin-bottom:8px;"><i class="bi bi-clipboard2-pulse"></i> บันทึกข้อมูลแผลกดทับ</div>'+
+      '<div class="row g-2 mb-2 pb-2" style="border-bottom: 1px dashed #cbd5e1;"><div class="col-12" style="font-size:10px; font-weight:700; color:#64748b;">[ 1. ข้อมูลเมื่อแรกรับ ]</div><div class="col-4 col-md-3"><input type="number" id="qf_'+fk+'_pu_braden_adm" class="form-control form-control-sm" placeholder="Braden แรกรับ"></div><div class="col-8 col-md-3"><select id="qf_'+fk+'_pu_adm_wound" class="form-select form-select-sm" onchange="document.getElementById(\'qf_'+fk+'_pu_adm_wound_desc\').style.display = this.value===\'มี\'?\'block\':\'none\'"><option value="ไม่มี">แผลแรกรับ: ไม่มี</option><option value="มี">แผลแรกรับ: มี</option></select></div><div class="col-12 col-md-6"><input type="text" id="qf_'+fk+'_pu_adm_wound_desc" class="form-control form-control-sm" placeholder="ระบุตำแหน่ง/ลักษณะแผลแรกรับ..." style="display:none;"></div></div>'+
+      '<div class="row g-2"><div class="col-12" style="font-size:10px; font-weight:700; color:#64748b;">[ 2. ข้อมูลเมื่อเกิดแผลใหม่ ]</div><div class="col-4 col-md-3"><input type="number" id="qf_'+fk+'_pu_braden_inc" class="form-control form-control-sm" placeholder="Braden วันเกิดแผล"></div><div class="col-8 col-md-5"><select id="qf_'+fk+'_pu_loc" class="form-select form-select-sm"><option value="">- ตำแหน่งแผล (1-15) -</option>'+locOpts+'</select></div><div class="col-12 col-md-4"><select id="qf_'+fk+'_pu_grade" class="form-select form-select-sm"><option value="">- ระดับแผล (Grade) -</option>'+gradeOpts+'</select></div><div class="col-4"><input type="text" id="qf_'+fk+'_pu_size" class="form-control form-control-sm" placeholder="กว้าง x ยาว (cm)"></div><div class="col-4"><select id="qf_'+fk+'_pu_exudate" class="form-select form-select-sm"><option value="">- สิ่งคัดหลั่ง -</option>'+exudateOpts+'</select></div><div class="col-4"><select id="qf_'+fk+'_pu_bed" class="form-select form-select-sm"><option value="">- ลักษณะพื้นแผล -</option>'+bedOpts+'</select></div></div></div>';
+  }
+  return '<div class="qc-inline-form"><div class="row g-2"><div class="col-12"><select id="qf_'+fk+'_pt" class="form-select form-select-sm"><option value="">-- เลือกผู้ป่วย --</option>'+lastData.map(function(p){var r=p.rawData||[];return '<option value="'+p.rowId+'" data-hn="'+escapeHtml(r[COL.HN]||'')+'" data-an="'+escapeHtml(r[COL.AN]||'')+'">'+escapeHtml((r[COL.PREFIX]||'')+(r[COL.NAME]||''))+' ('+escapeHtml(r[COL.HN]||'')+')</option>';}).join('')+'</select></div>'+
+    (types.length>1?'<div class="col-6"><select id="qf_'+fk+'_tp" class="form-select form-select-sm" onchange="togglePUFields(\''+fk+'\', this.value)">'+opts+'</select></div>':'<input type="hidden" id="qf_'+fk+'_tp" value="'+(types[0]||'')+'">')+
+    '<div class="'+(types.length>1?'col-6':'col-6')+'"><input type="date" id="qf_'+fk+'_dt" class="form-control form-control-sm" value="'+new Date().toISOString().split('T')[0]+'"></div>'+
+    (nG?'<div class="col-12" id="qf_'+fk+'_grade_box" style="display:'+(types[0]==='PRESSURE_ULCER'?'none':'block')+';"><div class="d-flex gap-1">'+['1','2','3','4'].map(function(g){return '<button class="grade-btn" id="qf_'+fk+'_g'+g+'" onclick="selGrade(\''+fk+'\',\''+g+'\')" type="button">G'+g+'</button>';}).join('')+'</div></div>':'')+
+    (nL?'<div class="col-6"><input type="text" id="qf_'+fk+'_lv" class="form-control form-control-sm" placeholder="Level (A-I)"></div>':'')+
+    puHtml+'<div class="col-12 d-flex gap-2 mt-2"><input type="text" id="qf_'+fk+'_nt" class="form-control form-control-sm flex-grow-1" placeholder="หมายเหตุเพิ่มเติม..."><button class="btn btn-primary btn-sm rounded-pill px-3" onclick="saveQaInc(\''+fk+'\', this)">บันทึก</button></div></div></div>';
+}
+
+function toggleQaForm(key){qaOpenForms[key]=!qaOpenForms[key];var el=document.getElementById('qaForm_'+key);if(el) el.style.display=qaOpenForms[key]?'block':'none';var btn=el?el.previousElementSibling:null;if(btn){btn.classList.toggle('open',qaOpenForms[key]);btn.innerHTML=qaOpenForms[key]?'▲ ซ่อนฟอร์มบันทึก':'<span style="font-size:15px">+</span> เพิ่มเหตุการณ์';}}
+window.togglePUFields = function(fk, val) { var puBox = document.getElementById('qf_' + fk + '_pu_box'); var gBox = document.getElementById('qf_' + fk + '_grade_box'); if (puBox) puBox.style.display = (val === 'PRESSURE_ULCER') ? 'block' : 'none'; if (gBox) gBox.style.display = (val === 'PRESSURE_ULCER') ? 'none' : 'block'; };
+var _selG={}; function selGrade(fk,g){_selG[fk]=g;['1','2','3','4'].forEach(function(x){var b=document.getElementById('qf_'+fk+'_g'+x);if(b) b.classList.toggle('sel',x===g);});}
+
+async function saveQaInc(fk, btnObj){
+  var ptEl=document.getElementById('qf_'+fk+'_pt'); if(!ptEl||!ptEl.value) return showError('กรุณาเลือกผู้ป่วย');
+  var opt=ptEl.selectedOptions[0],tpEl=document.getElementById('qf_'+fk+'_tp'),dtEl=document.getElementById('qf_'+fk+'_dt'),lvEl=document.getElementById('qf_'+fk+'_lv'),ntEl=document.getElementById('qf_'+fk+'_nt');
+  var dateISO=dtEl?dtEl.value:'';if(!dateISO) return; var parts=dateISO.split('-');var dateThai=parts[2]+'/'+parts[1]+'/'+(parseInt(parts[0],10)+543);
+  var gradeVal = _selG[fk] || ''; var noteVal = ntEl ? ntEl.value : ''; var eventType = tpEl ? tpEl.value : '';
+
+  if (eventType === 'PRESSURE_ULCER') {
+      var pBradenAdm = document.getElementById('qf_'+fk+'_pu_braden_adm')?.value || ''; var pAdmWound = document.getElementById('qf_'+fk+'_pu_adm_wound')?.value || 'ไม่มี'; var pAdmWoundDesc = document.getElementById('qf_'+fk+'_pu_adm_wound_desc')?.value || '';
+      var pBradenInc = document.getElementById('qf_'+fk+'_pu_braden_inc')?.value || ''; var pLoc = document.getElementById('qf_'+fk+'_pu_loc')?.value || ''; var pGrade = document.getElementById('qf_'+fk+'_pu_grade')?.value || ''; var pSize = document.getElementById('qf_'+fk+'_pu_size')?.value || ''; var pExudate = document.getElementById('qf_'+fk+'_pu_exudate')?.value || ''; var pBed = document.getElementById('qf_'+fk+'_pu_bed')?.value || '';
+      if(pAdmWound === 'ไม่มี' && (!pLoc || !pGrade)) return showError('กรุณาระบุตำแหน่งและระดับแผลใหม่');
+      gradeVal = pGrade; var details =[];
+      if(pBradenAdm) details.push("Bradenแรกรับ: " + pBradenAdm); details.push("แผลแรกรับ: " + pAdmWound); if(pAdmWound === 'มี' && pAdmWoundDesc) details.push("รายละเอียดแผลแรกรับ: " + pAdmWoundDesc);
+      if(pLoc || pGrade) { if(pBradenInc) details.push("Bradenเกิดแผล: " + pBradenInc); if(pLoc) details.push("ตำแหน่ง: " + pLoc); if(pSize) details.push("ขนาด: " + pSize + " cm"); if(pExudate) details.push("สิ่งคัดหลั่ง: " + pExudate); if(pBed) details.push("พื้นแผล: " + pBed); }
+      noteVal = details.join(' | ') + (noteVal ? " | Note: " + noteVal : "");
+  }
+
+  const originalText = btnObj.innerHTML;
+  btnObj.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  btnObj.disabled = true;
+
+  try{
+    await callApi('ensureIncidentLog');
+    await callApi('addIncident',{sheetName:currentSheet,yearBE:currentYearBE,eventDate:dateThai,hn:opt.dataset.hn||'',an:opt.dataset.an||'',eventType:eventType,value:1,grade:gradeVal,level:lvEl?lvEl.value:'',note:noteVal,rowIdRef:opt.value||''});
+    showSuccess('บันทึกเหตุการณ์สำเร็จ');
+    if(ntEl) ntEl.value=''; _selG[fk]=''; loadQaCards();
+  }catch(err){ showError(err.message); } finally { btnObj.innerHTML = originalText; btnObj.disabled = false; }
+}
+
+async function delQaInc(rowId){
+  if(!await appConfirm('ลบรายการนี้?', 'ต้องการลบเหตุการณ์นี้ใช่หรือไม่?', 'warning', 'ลบ', 'btn-danger')) return;
+  notyf.success('กำลังลบเหตุการณ์...');
+  try{ await callApi('deleteIncident',{rowId:rowId}); showSuccess('ลบเหตุการณ์สำเร็จ'); loadQaCards(); }catch(err){ showError(err.message); }
+}
+
+function renderGauge(elId,value,label,color){var el=document.getElementById(elId);if(!el) return;var p=Math.min(100,Math.max(0,value||0)),r=40,ci=2*Math.PI*r,off=ci-(p/100)*ci*0.75;el.innerHTML='<svg width="100" height="80" viewBox="0 0 100 90"><path d="M 10 72 A 40 40 0 1 1 90 72" fill="none" stroke="#e2e8f0" stroke-width="7" stroke-linecap="round"/><path d="M 10 72 A 40 40 0 1 1 90 72" fill="none" stroke="'+color+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(ci*0.75)+'" stroke-dashoffset="'+off+'" style="transition:stroke-dashoffset .8s"/><text x="50" y="56" text-anchor="middle" style="font-size:20px;font-weight:900;fill:#0f172a;font-family:Sarabun">'+p+'</text><text x="50" y="68" text-anchor="middle" style="font-size:8px;fill:#64748b;font-weight:700;font-family:Sarabun">%</text></svg><div class="gauge-label">'+label+'</div>';}
+
+function renderWaitScatter(){var el=document.getElementById('waitScatter');if(!el) return;var data=lastData.filter(function(p){return p.waitTime&&Number(p.waitTime)>0;}).map(function(p){return Number(p.waitTime);});if(data.length<2){el.innerHTML='<div class="qc-empty">ข้อมูลไม่เพียงพอ</div>';return;}var avg=data.reduce(function(a,b){return a+b;},0)/data.length;el.innerHTML='';var W=el.clientWidth||300,H=110,m={t:8,r:12,b:22,l:34},w=W-m.l-m.r,h=H-m.t-m.b;var svg=d3.select(el).append("svg").attr("width",W).attr("height",H);var g=svg.append("g").attr("transform","translate("+m.l+","+m.t+")");var x=d3.scaleLinear().domain([0,data.length-1]).range([0,w]);var y=d3.scaleLinear().domain([0,d3.max(data)*1.15]).range([h,0]);g.append("g").attr("transform","translate(0,"+h+")").call(d3.axisBottom(x).ticks(5).tickFormat(function(i){return ''+(i+1);})).selectAll("text").style("font-size","8px").style("font-family","Sarabun");g.append("g").call(d3.axisLeft(y).ticks(4)).selectAll("text").style("font-size","8px").style("font-family","Sarabun");g.append("line").attr("x1",0).attr("x2",w).attr("y1",y(avg)).attr("y2",y(avg)).attr("stroke","#d97706").attr("stroke-width",1.5).attr("stroke-dasharray","4,3");g.append("text").attr("x",w-2).attr("y",y(avg)-4).attr("text-anchor","end").style("font-size","8px").style("fill","#d97706").style("font-weight","800").style("font-family","Sarabun").text("เฉลี่ย "+avg.toFixed(0)+" นาที");g.selectAll("circle").data(data).join("circle").attr("cx",function(d,i){return x(i);}).attr("cy",function(d){return y(d);}).attr("r",4).attr("fill",function(d){return d>avg*1.3?'#dc2626':d>avg?'#d97706':'#059669';}).attr("opacity",.85).attr("stroke","#fff").attr("stroke-width",1.5);}
+
+window.switchQaTab=switchQaTab;
+window.loadQaCards=loadQaCards;
+window.toggleQaForm=toggleQaForm;
+window.selGrade=selGrade;
+window.saveQaInc=saveQaInc;
+window.delQaInc=delQaInc;
+window.openQaTab=openQaTab;
+
+  // โค้ดที่หายไป... นำมาแปะตรงนี้ครับ ⬇️
+function genderOf(p){ const g=String(p?.rawData?.[COL.GENDER]||'').trim(); if(g.includes('หญิง')) return 'F'; if(g.includes('ชาย')) return 'M'; return 'U'; }
+function typeOf(p){ return String(p?.patientStatus||p?.rawData?.[COL.STATUS]||'').trim(); }
+function isOutcomeClosed(r){ return !!(r?.[COL.DC_DATE]||r?.[COL.TRANSFER_OUT_DATE]||r?.[COL.ABSCOND_DATE]||r?.[COL.REFUSE_DATE]||r?.[COL.REFER_OUT_DATE]||r?.[COL.DEATH_DATE]); }
+function countByGender(list){ let F=0,M=0; list.forEach(p=>{ const g=genderOf(p); if(g==='F') F++; else if(g==='M') M++; }); return {F,M,T:F+M}; }
+function sumInc(list,type){ return (list||[]).filter(x=>x.eventType===type).reduce((s,x)=>s+(parseFloat(x.value)||0),0); }
+function avgInc(list,type){ const a=(list||[]).filter(x=>x.eventType===type).map(x=>parseFloat(x.value)||0); if(!a.length) return null; return a.reduce((s,v)=>s+v,0)/a.length; }
+function phlebitisByGrade(list){ const out={1:0,2:0,3:0,4:0}; (list||[]).filter(x=>x.eventType==='PHLEBITIS').forEach(x=>{ const g=parseInt(x.grade,10); if(out[g]!==undefined) out[g]+=(parseFloat(x.value)||1); }); return out; }
+function deptFromRow(r){ const s=(String(r?.[COL.WARD]||'').trim()||String(r?.[COL.SAI]||'').trim()).toLowerCase(); if(!s) return 'ไม่ระบุ'; if(s.includes('med')||s.includes('อายุร')) return 'อายุรศาสตร์'; if(s.includes('surg')||s.includes('ศัลย')) return 'ศัลยศาสตร์'; if(s.includes('ped')||s.includes('กุมาร')) return 'กุมารเวชศาสตร์'; if(s.includes('obs')||s.includes('สูติ')) return 'สูติศาสตร์'; return String(r?.[COL.WARD]||'').trim()||String(r?.[COL.SAI]||'').trim()||'ไม่ระบุ'; }
+
+function parseThaiDateClient(dStr){ if(!dStr) return null; const p=String(dStr).split('/'); if(p.length<3) return null; const d=new Date(parseInt(p[2],10)-543,parseInt(p[1],10)-1,parseInt(p[0],10)); d.setHours(0,0,0,0); return isNaN(d.getTime())?null:d; }
+function parseTimeHMClient(t){ const s=String(t||'').trim(); if(!s||s==='0'||!s.includes(':')) return {h:0,m:0}; const a=s.split(':'); return {h:parseInt(a[0],10)||0,m:parseInt(a[1],10)||0}; }
+function calculateUtilDaysClient(inDateStr,inTimeStr,outDateStr,outTimeStr,period,asOfDate){
+  if(!inDateStr||!period?.start||!period?.end) return 0;
+  const start=parseThaiDateClient(inDateStr); if(!start) return 0;
+  const inHM=parseTimeHMClient(inTimeStr); start.setHours(inHM.h,inHM.m,0,0);
+  let end; if(outDateStr){ end=parseThaiDateClient(outDateStr); if(!end) return 0; const outHM=parseTimeHMClient(outTimeStr); end.setHours(String(outTimeStr||'').includes(':')?outHM.h:23,String(outTimeStr||'').includes(':')?outHM.m:59,0,0); } else { end=new Date(asOfDate); end.setHours(23,59,0,0); }
+  const cs=start<period.start?new Date(period.start):new Date(start);
+  const ce=end>period.end?new Date(period.end):new Date(end);
+  if(ce<cs) return 0;
+  const d1=new Date(cs.getFullYear(),cs.getMonth(),cs.getDate());
+  const d2=new Date(ce.getFullYear(),ce.getMonth(),ce.getDate());
+  return Math.round((d2-d1)/86400000)+1;
+}
+// ⬆️ นำมาแปะตรงนี้ครับ ⬆️
+
+/* ════════════════════════════════════════════════
+   FULL REPORTS & PRINTING
+════════════════════════════════════════════════ */
+
+
+  
+async function showFullReport(btn){ 
+  lastTriggerEl=btn||document.activeElement; lastTriggerEl?.blur?.();
+  if(!currentSheet) return showError('ยังไม่ได้เลือกเดือน');
+  showLoader('กำลังคำนวณรายงานประจำเดือน...');
+  try{
+    const[patients,summary,dxMapPack,incidents]=await Promise.all([ callApi('getAllData',{ sheetName:currentSheet, yearBE:currentYearBE }), callApi('getMonthlySummaryRow',currentSheet), callApi('getDxMap'), callApi('getIncidentsByMonth',{ sheetName:currentSheet }) ]);
+    const dxMap=dxMapPack?.map||{}; const mapDx=s=>String(dxMap[String(s||'').trim().replace(/\s+/g,' ')]||String(s||'').trim().replace(/\s+/g,' ')).trim()||'';
+    const waitList=patients.map(p=>Number(p.waitTime)).filter(v=>v>0); const avgWait=waitList.length>0?waitList.reduce((a,b)=>a+b,0)/waitList.length:0;
+    const days=daysInMonthFromSheet(currentSheet); const isMonthClosed=!!(summary&&summary.beds); const beds=isMonthClosed?Number(summary.beds):0; const bedDays=beds*days;
+    const carryList=patients.filter(p=>typeOf(p)==='ยอดยกมา'); const inNewList=patients.filter(p=>typeOf(p)==='รับใหม่'); const inTransferList=patients.filter(p=>typeOf(p)==='รับย้าย'); const inReferList=patients.filter(p=>typeOf(p)==='รับ Refer'); const inAllList=[...carryList,...inNewList,...inTransferList,...inReferList];
+    const outDCList=patients.filter(p=>!!p?.rawData?.[COL.DC_DATE]); const outDeathList=patients.filter(p=>!!p?.rawData?.[COL.DEATH_DATE]); const outTOList=patients.filter(p=>!!p?.rawData?.[COL.TRANSFER_OUT_DATE]); const outROList=patients.filter(p=>!!p?.rawData?.[COL.REFER_OUT_DATE]); const outAbsList=patients.filter(p=>!!p?.rawData?.[COL.ABSCOND_DATE]); const outRefuseList=patients.filter(p=>!!p?.rawData?.[COL.REFUSE_DATE]); const outAllList=patients.filter(p=>isOutcomeClosed(p.rawData||[])); const eomList=patients.filter(p=>p.status==='ยังรักษาอยู่');
+    const patientDaysOcc=outAllList.reduce((s,p)=>s+safeInt(p.displayLOS),0); const monthStart=getMonthStartFromSheet(), monthEnd=getMonthEndFromSheet(); const period={start:monthStart,end:monthEnd}; const asOfDate=new Date();
+    const patientDaysUtil=patients.reduce((sum,p)=>{ const r=p.rawData||[]; const inDateStr=r[COL.ADMIT_DATE]||r[COL.TRANSFER_IN_DATE]||r[COL.REFER_IN_DATE]||''; const inTimeStr=r[COL.ADMIT_TIME]||r[COL.TRANSFER_IN_TIME]||r[COL.REFER_IN_TIME]||''; const outDateStr=r[COL.DC_DATE]||r[COL.TRANSFER_OUT_DATE]||r[COL.ABSCOND_DATE]||r[COL.REFUSE_DATE]||r[COL.REFER_OUT_DATE]||r[COL.DEATH_DATE]||''; const outTimeStr=r[COL.OUT_TIME]||''; if(!inDateStr||!period.start||!period.end) return sum; return sum+calculateUtilDaysClient(inDateStr,inTimeStr,outDateStr,outTimeStr,period,asOfDate); },0);
+    const deptRows={}; inAllList.forEach(p=>{ const r=p.rawData||[]; const dept=deptFromRow(r); if(!deptRows[dept]) deptRows[dept]={F:0,M:0,T:0,PDF:0,PDM:0,PD:0}; const g=genderOf(p); const los=safeInt(p.displayLOS); if(g==='F'){deptRows[dept].F++;deptRows[dept].PDF+=los;} if(g==='M'){deptRows[dept].M++;deptRows[dept].PDM+=los;} deptRows[dept].T=deptRows[dept].F+deptRows[dept].M; deptRows[dept].PD=deptRows[dept].PDF+deptRows[dept].PDM; });
+    const counts={}; patients.filter(p=>['รับใหม่','รับย้าย','รับ Refer'].includes(typeOf(p))).forEach(p=>{ const r=p.rawData||[]; let mainDx=splitDxList(r[COL.DX1]).map(mapDx).filter(Boolean)[0]||''; if(!mainDx) mainDx=splitDxList(r[COL.DX2]).map(mapDx).filter(Boolean)[0]||''; if(mainDx) addCount(counts,mainDx,1); }); const topDx5=topEntries(counts,5);
+    const ph=phlebitisByGrade(incidents); const ghiList=(incidents||[]).filter(x=>x.eventType==='GHI'&&String(x.level||'').trim()!=='');
+    const k={ k11_unplanned_et:sumInc(incidents,'UNPLANNED_ET'), k12_vent_days:sumInc(incidents,'VENT_DAYS'), k13_icd_displaced:sumInc(incidents,'ICD_DISLODGE'), k14_icd_days:sumInc(incidents,'ICD_LINE_DAYS'), k15_pressure_ulcer_rate:fmt2((patientDaysOcc>0?(sumInc(incidents,'PRESSURE_ULCER')/patientDaysOcc*1000):0)), k16_fall_rate:fmt2((patientDaysOcc>0?(sumInc(incidents,'FALL')/patientDaysOcc*1000):0)), k17_med_error:fmt2((patientDaysOcc>0?(sumInc(incidents,'MED_ERROR')/patientDaysOcc*1000):0)), k18_ghi_level:safeText(ghiList.length?String(ghiList[ghiList.length-1].level).trim():'-','-'), k19_unplanned_cpr:sumInc(incidents,'UNPLANNED_CPR'), k20_unplanned_icu:sumInc(incidents,'UNPLANNED_ICU'), k21_wrong_proc:sumInc(incidents,'WRONG_PROCEDURE'), k22_wrong_surgery:sumInc(incidents,'WRONG_SURGERY'), k23_wrong_blood:sumInc(incidents,'WRONG_TRANSFUSION'), k24_phlebitis_g1:ph[1]||0, k24_phlebitis_g2:ph[2]||0, k24_phlebitis_g3:ph[3]||0, k24_phlebitis_g4:ph[4]||0, k25_note_qty:Math.round(avgInc(incidents,'NURSE_NOTE_QTY')||0), k25_note_qlt:Math.round(avgInc(incidents,'NURSE_NOTE_QLT')||0), k26_avg_wait_dc_min:avgWait, k27_refer_in:sumInc(incidents,'REFER_IN'), k27_refer_out:sumInc(incidents,'REFER_OUT'), k27_refer_back:sumInc(incidents,'REFER_BACK'), k27_refer_back_to:sumInc(incidents,'REFER_BACK_TO'), k27_daycare:sumInc(incidents,'DAYCARE') };
+    const ctx={ sheet:currentSheet, days, beds, isMonthClosed, inAllG:countByGender(inAllList), carryG:countByGender(carryList), inNewG:countByGender(inNewList), inTransferG:countByGender(inTransferList), inReferG:countByGender(inReferList), outAllG:countByGender(outAllList), outDCG:countByGender(outDCList), outDeathG:countByGender(outDeathList), outTOG:countByGender(outTOList), outROG:countByGender(outROList), outAbsG:countByGender(outAbsList), outRefuseG:countByGender(outRefuseList), eomG:countByGender(eomList), patientDays:patientDaysOcc, patientDaysUtil, borOcc:bedDays>0?patientDaysOcc/bedDays*100:0, borUtil:bedDays>0?patientDaysUtil/bedDays*100:0, deptRows, topDx5, kpi1127:k };
+    currentReportCtx=ctx; document.getElementById('reportMonthTitle').innerText=currentSheet; document.getElementById('reportResult').innerHTML=buildModernReportHTML(ctx); hideLoader(); bootstrap.Modal.getOrCreateInstance(document.getElementById('reportModal')).show(); setTimeout(()=>renderReportCharts(ctx),250);
+  } catch(err){ hideLoader(); showError(err.toString()); }
+}
+
+function buildModernReportHTML(ctx){
+  const k=ctx.kpi1127||{}, isC=ctx.isMonthClosed;
+  const dxHtml=(ctx.topDx5&&ctx.topDx5.length)?ctx.topDx5.map(([dx,count],i)=>{const medalColors=['#ffd700','#c0c0c0','#cd7f32','#e2e8f0','#e2e8f0'];return `<div class="dx-item d-flex align-items-center p-2 mb-2 bg-white rounded-3 border-0 shadow-sm"><div class="dx-rank rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style="width:35px;height:35px;background:${medalColors[i]};font-weight:900;font-size:14px;">${i+1}</div><div class="flex-grow-1 fw-bold text-secondary text-truncate" style="font-size:13.5px;">${escapeHtml(dx)}</div><div class="badge px-3 py-2 rounded-pill" style="background:linear-gradient(45deg,#3b82f6,#06b6d4);font-size:12px;">${count} ราย</div></div>`;}).join(''):`<div class="text-muted text-center py-4">ไม่มีข้อมูลการวินิจฉัย</div>`;
+  return `<div class="p-3"><div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3"><div><h4 class="m-0 fw-black">รายงานสรุปผลการดำเนินงาน</h4><div class="text-primary fw-bold" style="font-size:13px;">Ward 9/2 • ${ctx.sheet}</div><div class="text-secondary" style="font-size:12px;">${ctx.days||0} วัน${isC?` • ${ctx.beds} เตียง`:''}</div></div><button class="btn btn-danger rounded-pill" onclick="printOfficialReport()"><i class="bi bi-printer-fill me-1"></i>พิมพ์</button></div><div class="row g-3 mb-4"><div class="col-6 col-md-3"><div class="mini text-center"><div class="label">ยอดยกมา</div><div class="value">${ctx.carryG?.T||0}</div></div></div><div class="col-6 col-md-3"><div class="mini text-center"><div class="label">รับเข้า</div><div class="value">${ctx.inAllG?.T||0}</div></div></div><div class="col-6 col-md-3"><div class="mini text-center"><div class="label">จำหน่าย</div><div class="value">${ctx.outAllG?.T||0}</div></div></div><div class="col-6 col-md-3"><div class="mini text-center"><div class="label">คงพยาบาล</div><div class="value">${ctx.eomG?.T||0}</div></div></div></div><div class="row g-3 mb-4"><div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label">BOR (สถิติ)</div><div class="kpi-value text-primary">${isC?fmt2(ctx.borOcc)+'%':'N/A'}</div></div></div><div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label">BOR (งานจริง)</div><div class="kpi-value text-purple">${isC?fmt2(ctx.borUtil)+'%':'N/A'}</div></div></div><div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label">วันนอนรวม</div><div class="kpi-value">${ctx.patientDays||0}</div></div></div><div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label">วันใช้เตียงรวม</div><div class="kpi-value">${ctx.patientDaysUtil||0}</div></div></div></div><div class="row g-3 mb-4"><div class="col-12 col-lg-4"><div class="kpi-card h-100"><h6 class="fw-bold mb-3">5 อันดับโรคสูงสุด</h6>${dxHtml}</div></div><div class="col-12 col-lg-4"><div class="kpi-card h-100"><canvas id="chartBOR" style="max-height:200px;"></canvas></div></div><div class="col-12 col-lg-4"><div class="kpi-card h-100"><canvas id="chartDept" style="max-height:200px;"></canvas></div></div></div><div class="row g-3 mb-4"><div class="col-md-6"><div class="kpi-card"><h6 class="fw-bold mb-2 text-primary">รับเข้า</h6><table class="table table-sm mb-0 text-center"><thead><tr><th class="text-start">ประเภท</th><th>หญิง</th><th>ชาย</th><th>รวม</th></tr></thead><tbody><tr><td class="text-start">ยอดยกมา</td><td>${ctx.carryG?.F||0}</td><td>${ctx.carryG?.M||0}</td><td><b>${ctx.carryG?.T||0}</b></td></tr><tr><td class="text-start">รับใหม่</td><td>${ctx.inNewG?.F||0}</td><td>${ctx.inNewG?.M||0}</td><td><b>${ctx.inNewG?.T||0}</b></td></tr><tr><td class="text-start">รับย้าย</td><td>${ctx.inTransferG?.F||0}</td><td>${ctx.inTransferG?.M||0}</td><td><b>${ctx.inTransferG?.T||0}</b></td></tr><tr><td class="text-start">รับ Refer</td><td>${ctx.inReferG?.F||0}</td><td>${ctx.inReferG?.M||0}</td><td><b>${ctx.inReferG?.T||0}</b></td></tr></tbody></table></div></div><div class="col-md-6"><div class="kpi-card"><h6 class="fw-bold mb-2 text-danger">จำหน่าย</h6><table class="table table-sm mb-0 text-center"><thead><tr><th class="text-start">ประเภท</th><th>หญิง</th><th>ชาย</th><th>รวม</th></tr></thead><tbody><tr><td class="text-start">D/C</td><td>${ctx.outDCG?.F||0}</td><td>${ctx.outDCG?.M||0}</td><td><b>${ctx.outDCG?.T||0}</b></td></tr><tr><td class="text-start">Refer Out</td><td>${ctx.outROG?.F||0}</td><td>${ctx.outROG?.M||0}</td><td><b>${ctx.outROG?.T||0}</b></td></tr><tr><td class="text-start">ย้ายแผนก</td><td>${ctx.outTOG?.F||0}</td><td>${ctx.outTOG?.M||0}</td><td><b>${ctx.outTOG?.T||0}</b></td></tr><tr><td class="text-start">ตาย/หนี/ปฏิเสธ</td><td>${(ctx.outDeathG?.F||0)+(ctx.outAbsG?.F||0)+(ctx.outRefuseG?.F||0)}</td><td>${(ctx.outDeathG?.M||0)+(ctx.outAbsG?.M||0)+(ctx.outRefuseG?.M||0)}</td><td><b>${(ctx.outDeathG?.T||0)+(ctx.outAbsG?.T||0)+(ctx.outRefuseG?.T||0)}</b></td></tr></tbody></table></div></div></div><div class="kpi-card"><h6 class="fw-bold mb-3">ตัวชี้วัดคุณภาพงานพยาบาล (QA)</h6><div class="d-flex flex-wrap gap-2"><span class="chip bg-light border">Unplanned ET: <b>${k.k11_unplanned_et||0}</b></span><span class="chip bg-light border">แผลกดทับ: <b>${k.k15_pressure_ulcer_rate||0}/1000</b></span><span class="chip bg-light border">หกล้ม: <b>${k.k16_fall_rate||0}/1000</b></span><span class="chip bg-light border">บันทึกการพยาบาล: <b>${k.k25_note_qlt||0}%</b></span><span class="chip bg-light border">รอ D/C: <b>${fmt2(k.k26_avg_wait_dc_min||0)} นาที</b></span><span class="chip bg-light border">คลาดเคลื่อนยา: <b>${k.k17_med_error||0}/1000</b></span></div></div></div>`;
+}
+function renderReportCharts(ctx){
+  if(window._reportCharts) window._reportCharts.forEach(c=>{try{c.destroy();}catch(e){}}); window._reportCharts=[];
+  const elBOR=document.getElementById('chartBOR'); if(elBOR){ const c1=new Chart(elBOR,{type:'doughnut',data:{labels:['ครองเตียง','ว่าง'],datasets:[{data:[ctx.borOcc||0.1,Math.max(0,100-(ctx.borOcc||0))],backgroundColor:['#80cbc4','#eceff1'],borderWidth:0,borderRadius:15,cutout:'80%'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}}); window._reportCharts.push(c1); }
+  const elDept=document.getElementById('chartDept'); if(elDept){ const deptLabels=Object.keys(ctx.deptRows||{}); const c2=new Chart(elDept,{type:'bar',data:{labels:deptLabels,datasets:[{label:'วันนอน',data:deptLabels.map(d=>ctx.deptRows[d]?.PD||0),backgroundColor:'#93c5fd',borderRadius:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}}); window._reportCharts.push(c2); }
+}
+function buildTabularReportHTML(ctx){
+  const {sheet,days,beds,isMonthClosed,kpi1127:k}=ctx; const isC=isMonthClosed;
+  const rowG=(label,g,bold=false)=>`<tr style="${bold?'font-weight:bold;background:#f9f9f9;':''}"><td style="text-align:left;padding-left:15px;">${label}</td><td>${g.F}</td><td>${g.M}</td><td style="background:#f0f0f0;">${g.T}</td></tr>`;
+  let sumF=0,sumM=0,sumT=0,sumPDF=0,sumPDM=0,sumPD=0; Object.values(ctx.deptRows||{}).forEach(r=>{sumF+=r.F||0;sumM+=r.M||0;sumT+=r.T||0;sumPDF+=r.PDF||0;sumPDM+=r.PDM||0;sumPD+=r.PD||0;});
+  const deptHtml=Object.keys(ctx.deptRows||{}).map(d=>`<tr><td style="text-align:left;font-weight:bold;">- ${d}</td><td>${ctx.deptRows[d].F||0}</td><td>${ctx.deptRows[d].M||0}</td><td style="background:#f0f0f0;">${ctx.deptRows[d].T||0}</td></tr><tr style="background:#f5f5f5;font-weight:bold;"><td style="text-align:left;padding-left:20px;">วันนอน</td><td>${ctx.deptRows[d].PDF||0}</td><td>${ctx.deptRows[d].PDM||0}</td><td style="background:#e0e0e0;">${ctx.deptRows[d].PD||0}</td></tr>`).join('')+`<tr style="font-weight:bold;background:#fff3cd;"><td style="text-align:left;">รวมทุกภาควิชา</td><td>${sumF}</td><td>${sumM}</td><td style="background:#ffe082;">${sumT}</td></tr><tr style="font-weight:bold;"><td style="text-align:left;padding-left:20px;">วันนอนรวม</td><td>${sumPDF}</td><td>${sumPDM}</td><td style="background:#e0e0e0;">${sumPD}</td></tr>`;
+  return `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>Report_${sheet}</title><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet"><style>@media print{@page{size:A4 portrait;margin:1cm;}}body{font-family:'Sarabun',sans-serif;font-size:12px;}.header{text-align:center;border-bottom:2px solid #000;margin-bottom:15px;padding-bottom:5px;}.header h2{margin:0;font-size:18px;font-weight:700;}.main-grid{display:flex;gap:15px;}.col-left{flex:1.2;}.col-right{flex:1;}table{width:100%;border-collapse:collapse;margin-bottom:10px;}th,td{border:1px solid #333;padding:4px 2px;text-align:center;}.section-title{background:#444;color:#fff;text-align:left;padding-left:5px;font-weight:bold;}.footer-sign{margin-top:30px;display:flex;justify-content:space-around;text-align:center;}.dx-list{text-align:left;padding:5px;border:1px solid #333;font-size:11px;}</style></head><body><div class="header"><h2>ใบรายงานสถิติผู้ป่วยใน Ward 9/2</h2></div><div style="display:flex;justify-content:space-between;margin-bottom:10px;font-weight:600;"><span>ประจำเดือน: ${sheet}</span><span>จำนวนวัน: ${days}</span><span>เตียง: ${isC?beds:'N/A'}</span></div><div class="main-grid"><div class="col-left"><table><thead><tr><th style="text-align:left;">รายการ</th><th>หญิง</th><th>ชาย</th><th>รวม</th></tr></thead><tbody><tr><td colspan="4" class="section-title">1. รับเข้า</td></tr>${rowG('ยอดยกมา',ctx.carryG)}${rowG('รับใหม่',ctx.inNewG)}${rowG('รับย้าย',ctx.inTransferG)}${rowG('รับ Refer',ctx.inReferG)}${rowG('รวม',ctx.inAllG,true)}<tr><td colspan="4" class="section-title">2. จำหน่าย</td></tr>${rowG('D/C',ctx.outDCG)}${rowG('ตาย',ctx.outDeathG)}${rowG('ย้าย',ctx.outTOG)}${rowG('Refer Out',ctx.outROG)}${rowG('หนี/ปฏิเสธ',{F:(ctx.outAbsG?.F||0)+(ctx.outRefuseG?.F||0),M:(ctx.outAbsG?.M||0)+(ctx.outRefuseG?.M||0),T:(ctx.outAbsG?.T||0)+(ctx.outRefuseG?.T||0)})}${rowG('รวม',ctx.outAllG,true)}<tr><td colspan="4" class="section-title">3. คงพยาบาล</td></tr>${rowG('ปลายเดือน',ctx.eomG,true)}<tr><td colspan="4" class="section-title">4. แยกภาควิชา</td></tr>${deptHtml}</tbody></table></div><div class="col-right"><table><thead><tr><th>ข้อ</th><th>รายการ</th><th>ผล</th></tr></thead><tbody><tr><td>6</td><td style="text-align:left;">BOR Official</td><td><b>${isC?fmt2(ctx.borOcc)+'%':'-'}</b></td></tr><tr><td>7</td><td style="text-align:left;">BOR Util</td><td>${isC?fmt2(ctx.borUtil)+'%':'-'}</td></tr><tr><td>8</td><td style="text-align:left;">วันนอนรวม</td><td>${ctx.patientDays}</td></tr><tr><td>9</td><td style="text-align:left;">วันใช้เตียงรวม</td><td>${ctx.patientDaysUtil||0}</td></tr><tr><td colspan="3" style="text-align:left;font-weight:bold;">10. 5 โรคแรก</td></tr><tr><td colspan="3"><div class="dx-list">${ctx.topDx5.map((d,i)=>`<div>${i+1}. ${d[0]} (${d[1]})</div>`).join('')||'ไม่มีข้อมูล'}</div></td></tr><tr><td>11</td><td style="text-align:left;">Unplanned ET</td><td>${k.k11_unplanned_et}</td></tr><tr><td>15</td><td style="text-align:left;">แผลกดทับ/1000</td><td style="color:red;">${k.k15_pressure_ulcer_rate}</td></tr><tr><td>16</td><td style="text-align:left;">หกล้ม/1000</td><td style="color:red;">${k.k16_fall_rate}</td></tr><tr><td>24</td><td style="text-align:left;">Phlebitis</td><td>${(k.k24_phlebitis_g1||0)+(k.k24_phlebitis_g2||0)+(k.k24_phlebitis_g3||0)+(k.k24_phlebitis_g4||0)}</td></tr><tr><td>25</td><td style="text-align:left;">บันทึกพยาบาล</td><td>${k.k25_note_qlt}%</td></tr><tr><td>26</td><td style="text-align:left;">รอ D/C (นาที)</td><td>${fmt2(k.k26_avg_wait_dc_min)}</td></tr><tr><td>27</td><td style="text-align:left;">Refer IN/OUT</td><td>${k.k27_refer_in}/${k.k27_refer_out}</td></tr></tbody></table></div></div><div class="footer-sign"><div><br>ลงชื่อ..............................<br>ผู้รายงาน</div><div><br>ลงชื่อ..............................<br>หัวหน้าหอผู้ป่วย</div></div><div style="text-align:center;margin-top:10px;font-size:10px;color:#666;">พิมพ์เมื่อ: ${new Date().toLocaleString('th-TH')}</div></body></html>`;
+}
+function printPressureUlcerReport() {
+    if (!currentSheet || !qaReport || !qaIncidents) { return showError('โปรดกดปุ่ม โหลดข้อมูล ในหน้าตัวชี้วัด QA ก่อนพิมพ์'); }
+    const puIncidents = qaIncidents.filter(x => x.eventType === 'PRESSURE_ULCER');
+    const totalPatients = qaReport.totalPatients || 0; const patientDays = qaReport.patientDays || 0;
+    const puValidForCalc = puIncidents.filter(x => { const g = String(x.grade).trim(); return g !== '' && !g.startsWith('IAD'); });
+    const newPuCount = puValidForCalc.length; const puRate = patientDays > 0 ? ((newPuCount / patientDays) * 1000).toFixed(2) : '0.00';
+    const iadCat1Count = puIncidents.filter(x => x.grade === 'IAD Cat I').length; const iadCat2Count = puIncidents.filter(x => x.grade === 'IAD Cat II').length; const iadCount = iadCat1Count + iadCat2Count + puIncidents.filter(x => x.grade === 'IAD').length; const mmpiCount = puIncidents.filter(x => x.grade === 'MMPI').length;
+    let tableRows = '';
+    if (puIncidents.length === 0) { tableRows = `<tr><td colspan="15" style="text-align:center; padding: 30px; font-size:16px;">-- ไม่มีรายงานการเกิดเหตุการณ์ในเดือนนี้ --</td></tr>`; } 
+    else {
+        puIncidents.forEach(inc => {
+            const pt = lastData.find(p => p.rowId == inc.rowIdRef || (p.rawData && p.rawData[COL.HN] == inc.hn));
+            const dept = pt ? (pt.rawData[COL.WARD] || pt.rawData[COL.SAI] || '') : ''; const name = inc.name || (pt ? pt.rawData[COL.NAME] : '');
+            const admitDate = pt ? (pt.rawData[COL.ADMIT_DATE] || pt.rawData[COL.TRANSFER_IN_DATE] || pt.rawData[COL.REFER_IN_DATE] || '') : ''; const an = pt ? (pt.rawData[COL.AN] || '') : (inc.an || ''); 
+            const g = String(inc.grade || '').trim(); const note = inc.note || ''; 
+            let bradenAdm = ''; let admWound = 'ไม่มี'; let admWoundDesc = ''; let bradenInc = ''; let locDesc = ''; 
+            if (note) { let parts = note.split('|').map(s => s.trim()); parts.forEach(part => { if (part.startsWith("Bradenแรกรับ:")) bradenAdm = part.replace("Bradenแรกรับ:", "").trim(); else if (part.startsWith("แผลแรกรับ:")) admWound = part.replace("แผลแรกรับ:", "").trim(); else if (part.startsWith("รายละเอียดแผลแรกรับ:")) admWoundDesc = part.replace("รายละเอียดแผลแรกรับ:", "").trim(); else if (part.startsWith("Bradenเกิดแผล:")) bradenInc = part.replace("Bradenเกิดแผล:", "").trim(); else if (part.startsWith("ตำแหน่ง:") || part.startsWith("ขนาด:") || part.startsWith("สิ่งคัดหลั่ง:") || part.startsWith("พื้นแผล:")) { let cleanPart = part.replace("ตำแหน่ง:", "").replace("ขนาด:", "").replace("สิ่งคัดหลั่ง:", "").replace("พื้นแผล:", "").trim(); if (cleanPart) locDesc += cleanPart + "<br>"; } }); }
+            const grade1to4 =['1', '2', '3', '4'].includes(g) ? `<b>${g}</b><br>${locDesc}` : ''; const dti = g === 'DTI' ? `<b>✓</b><br>${locDesc}` : ''; const uns = g === 'Unstageable' ? `<b>✓</b><br>${locDesc}` : ''; const mdrsi = (g === 'MDRSI' || g === 'MDRPI') ? `<b>✓</b><br>${locDesc}` : '';
+            let iadText = g.replace('IAD', '').trim(); const iad = g.startsWith('IAD') ? `<b>${iadText || '✓'}</b>` : ''; const mmpi = g === 'MMPI' ? `<b>✓</b><br>${locDesc}` : '';
+            const admWoundHas = (admWound === 'มี') ? escapeHtml(admWoundDesc) : ''; const admWoundNo = (admWound === 'ไม่มี') ? '✓' : ''; const isNewWound = g !== '' && !g.startsWith('IAD'); const rowTotal = isNewWound ? '1' : '-'; const newWoundDate = g !== '' ? escapeHtml(inc.eventDate) : '-';
+            tableRows += `<tr><td>${escapeHtml(dept)}</td><td style="text-align:left;">${escapeHtml(name)}<br><span style="font-size:10px; color:#555;">HN: ${escapeHtml(inc.hn)} | AN: ${escapeHtml(an)}</span></td><td>${escapeHtml(admitDate)}</td><td>${escapeHtml(bradenAdm)}</td><td style="font-size:10px; text-align:left;">${admWoundHas}</td><td>${admWoundNo}</td><td>${newWoundDate}</td><td>${escapeHtml(bradenInc)}</td><td class="td-desc">${mdrsi}</td><td class="td-desc">${iad}</td><td class="td-desc">${mmpi}</td><td class="td-desc" style="text-align:left;">${grade1to4}</td><td class="td-desc" style="text-align:left;">${dti}</td><td class="td-desc" style="text-align:left;">${uns}</td><td>${rowTotal}</td></tr>`;
+        });
+    }
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <title>สรุปการเกิดแผลกดทับ_${currentSheet}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <style>
+            @media print {
+                @page { size: A4 landscape; margin: 10mm; }
+                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { font-family: 'Sarabun', sans-serif; font-size: 13px; color: #000; margin: 0; padding: 0; }
+            .container { padding: 10mm; }
+            .header { text-align: center; margin-bottom: 20px; font-size: 18px; font-weight: bold; }
+            .summary-box { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 15px; font-size: 14px; line-height: 1.8; }
+            .summary-box .col { width: 48%; }
+            .fill-line { border-bottom: 1px dotted #000; display: inline-block; min-width: 50px; text-align: center; font-weight: bold; }
+            
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #000; padding: 6px 4px; text-align: center; vertical-align: middle; }
+            th { background-color: #f2f2f2; font-size: 12px; font-weight: 600; }
+            .td-desc { font-size: 10px; line-height: 1.2; }
+            
+            .footer-note { margin-top: 15px; font-size: 12px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">แบบสรุปการเกิดแผลกดทับในหอผู้ป่วย Ward 9/2 ประจำเดือน ${currentSheet}</div>
+            <div class="summary-box">
+                <div class="col">
+                    1. จำนวนผู้ป่วยทั้งหมด <span class="fill-line" style="width: 80px;">${totalPatients}</span> คน<br>
+                    3. จำนวนวันนอนรวมของผู้ป่วยทั้งหมดในเดือนนี้ <span class="fill-line" style="width: 80px;">${patientDays}</span> วัน
+                </div>
+                <div class="col" style="border: 1px solid #000; padding: 10px; position: relative;">
+                    2. จำนวนแผลกดทับใหม่และแผล turn grad <span class="fill-line" style="width: 50px;">${newPuCount}</span> แผล<br>
+                    * สรุปการเกิดแผลกดทับ = (จำนวนแผลกดทับ <span class="fill-line" style="width: 40px;">${newPuCount}</span> / จำนวนวันนอนรวม <span class="fill-line" style="width: 40px;">${patientDays}</span>) X 1,000 = <span class="fill-line" style="width: 60px;">${puRate}</span> ครั้ง/1,000 วันนอน
+                </div>
+            </div>
+            <div class="summary-box" style="margin-top: -5px;">
+                <div style="width:100%;">
+                    4. จำนวนผู้ป่วยเกิด IAD <span class="fill-line" style="width: 50px;">${iadCount}</span> คน 
+                    &nbsp;&nbsp;ระดับความรุนแรง Cat I <span class="fill-line" style="width: 50px;">${iadCat1Count || '-'}</span> คน 
+                    &nbsp;&nbsp;Cat II <span class="fill-line" style="width: 50px;">${iadCat2Count || '-'}</span> คน 
+                    &nbsp;&nbsp;5. MMPI <span class="fill-line" style="width: 50px;">${mmpiCount}</span> คน
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 5%;">แผนก</th>
+                        <th rowspan="2" style="width: 14%;">ชื่อ-นามสกุล (Sticker)</th>
+                        <th rowspan="2" style="width: 6%;">วันที่เริ่ม<br>เฝ้าระวัง</th>
+                        <th rowspan="2" style="width: 5%;">คะแนน<br>Braden</th>
+                        <th colspan="2">แผลเมื่อแรกรับ</th>
+                        <th rowspan="2" style="width: 6%;">วันที่มีแผล</th>
+                        <th rowspan="2" style="width: 5%;">คะแนน<br>Braden</th>
+                        <th rowspan="2" style="width: 4%;">MDRSI</th>
+                        <th rowspan="2" style="width: 5%;">IAD<br>Cat I,Cat II</th>
+                        <th rowspan="2" style="width: 4%;">MMPI</th>
+                        <th colspan="3">ลักษณะแผลใหม่ (ระบุตำแหน่ง/ขนาด/ลักษณะ)</th>
+                        <th rowspan="2" style="width: 5%;">รวมจำนวน<br>แผลกดทับ</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 9%;">มี(ระบุ)<br>ตำแหน่ง,ลักษณะ</th>
+                        <th style="width: 4%;">ไม่มี</th>
+                        <th style="width: 12%;">ระดับ 1-4</th>
+                        <th style="width: 6%;">DTI</th>
+                        <th style="width: 7%;">Unstageable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+            <div class="footer-note">
+                <b>หมายเหตุ:</b> แผนก ให้ระบุแผนกตามที่ admit เช่น med, surg, eye, ENT, etc.
+            </div>
+        </div>
+        <script>
+            window.onload = function() {
+                setTimeout(function() { window.print(); }, 800);
+            };
+        <\/script>
+    </body>
+    </html>
+    `;
+
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+function renderDxTags(which){ const box=document.getElementById(which+'Box'),input=document.getElementById(which+'Input'),hidden=document.getElementById(which); if(!box||!input||!hidden) return;[...box.querySelectorAll('.dx-tag')].forEach(el=>el.remove()); dxTagState[which].tags.forEach((t,i)=>{ const tag=document.createElement('span'); tag.className='dx-tag'+(i===0?' primary':''); tag.innerHTML=`<span>${escapeHtml(t)}</span><span class="x" title="ลบ">×</span>`; tag.querySelector('.x').onclick=ev=>{ev.stopPropagation();removeDxTag(which,i);}; box.insertBefore(tag,input); }); hidden.value=tagsToString(dxTagState[which].tags); }
+function addDxTag(which,token){ const t=normalizeDxToken(token); if(!t||t.length<2) return; if(!dxTagState[which].tags.some(x=>x.toLowerCase()===t.toLowerCase())) dxTagState[which].tags.push(t); dxTagState[which].activeIdx=-1; renderDxTags(which); }
+function removeDxTag(which,idx){ dxTagState[which].tags.splice(idx,1); dxTagState[which].activeIdx=-1; renderDxTags(which); }
+function setSuggest(which,list){ dxTagState[which].suggest=list||[]; dxTagState[which].selected=0; renderSuggest(which); }
+function renderSuggest(which){ const sug=document.getElementById(which+'Suggest'),input=document.getElementById(which+'Input'); if(!sug||!input) return; const q=normalizeDxToken(input.value),list=dxTagState[which].suggest; if(!q||list.length===0){ sug.style.display='none'; sug.innerHTML=''; return; } sug.style.display='block'; sug.innerHTML=list.map((t,i)=>`<div class="item ${i===dxTagState[which].selected?'active':''}" data-i="${i}">${escapeHtml(t)}<div class="muted">กด Enter</div></div>`).join(''); sug.querySelectorAll('.item').forEach(el=>{ el.onmousedown=ev=>{ev.preventDefault();chooseSuggest(which,parseInt(el.getAttribute('data-i'),10)||0);}; }); }
+function chooseSuggest(which,index){ const hit=(dxTagState[which].suggest||[])[index]; if(!hit) return; addDxTag(which,hit); document.getElementById(which+'Input').value=''; setSuggest(which,[]); document.getElementById(which+'Suggest').style.display='none'; }
+function computeSuggest(q){ const key=q.toLowerCase(),a=DX_OPTIONS.filter(x=>x.toLowerCase().startsWith(key)),b=DX_OPTIONS.filter(x=>!a.includes(x)&&x.toLowerCase().includes(key)); return [...a,...b].slice(0,12); }
+
+function commitCurrentToken(which){ 
+  const input=document.getElementById(which+'Input'); if(!input) return; 
+  const raw=input.value,sugList=dxTagState[which].suggest||[],sel=dxTagState[which].selected??0; 
+  if(sugList.length>0&&normalizeDxToken(raw)&&sel>=0){chooseSuggest(which,sel);return;} 
+  splitDxList(raw).map(normalizeDxToken).filter(Boolean).forEach(p=>addDxTag(which,p)); 
+  input.value=''; setSuggest(which,[]); document.getElementById(which+'Suggest').style.display='none'; 
+}
+
+function initDxTagInput(which){
+  const input=document.getElementById(which+'Input'); if(!input) return;
+  input.addEventListener('input',()=>{
+    const q=normalizeDxToken(input.value).replace(/;.*$/,'');
+    if(!q||q.length<1){setSuggest(which,[]);return;}
+    setSuggest(which,computeSuggest(q));
+  });
+  input.addEventListener('keydown',e=>{
+    const hasSug=(dxTagState[which].suggest||[]).length>0;
+    if(e.key==='Enter'||e.key===';'){e.preventDefault();commitCurrentToken(which);return;}
+    if(hasSug&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
+      e.preventDefault(); const n=dxTagState[which].suggest.length;
+      dxTagState[which].selected=e.key==='ArrowDown'?((dxTagState[which].selected??0)+1)%n:((dxTagState[which].selected??0)-1+n)%n;
+      renderSuggest(which); return;
+    }
+    if(e.key==='Backspace'&&!input.value&&dxTagState[which].tags.length>0) removeDxTag(which,dxTagState[which].tags.length-1);
+  });
+  input.addEventListener('blur',()=>{ setTimeout(()=>{ const el=document.getElementById(which+'Suggest'); if(el) el.style.display='none'; },120); });
+}
+
+function loadDxTagsFromHidden(which){ 
+  const hidden=document.getElementById(which); 
+  if(!hidden) return; 
+  dxTagState[which].tags=splitToTags(hidden.value); 
+  renderDxTags(which); 
+}
+
+function printOfficialReport(){ 
+  if(!currentReportCtx) return; 
+  const win=window.open('','_blank'); 
+  win.document.write(buildTabularReportHTML(currentReportCtx)); 
+  win.document.close(); 
+  win.focus(); 
+  setTimeout(()=>win.print(),500); 
+}
+
+  
+  let countdown = 60; // 60 วินาที
+// ── ระบบ Auto-Logout (นับถอยหลัง) ──
+let logoutTimer; // Timer หลัก
+let countdownInterval; // Interval สำหรับเลขใน Modal
+
+function resetLogoutTimer() {
+    clearTimeout(logoutTimer);
+    clearInterval(countdownInterval);
+    
+    // ตั้งเวลา 50,000 ms (50 วินาที) ถ้าไม่มีการขยับ ให้เริ่มแสดง Modal
+    logoutTimer = setTimeout(() => {
+        showLogoutWarning();
+    }, 600000); 
+}
+
+function showLogoutWarning() {
+    if (typeof currentUser !== 'undefined' && currentUser) {
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('logoutWarningModal'));
+        modal.show();
+        
+        let timeLeft = 30; // นับถอยหลัง 10 วินาทีสุดท้ายใน Modal
+        document.getElementById('logoutTimerDisplay').innerText = timeLeft;
+        
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('logoutTimerDisplay').innerText = timeLeft;
+       if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                doLogout(true); // ✅ เพิ่ม true เพื่อสั่งให้ออกทันทีโดยไม่ถาม confirm
+            }
+        }, 1000);
+    }
+}
+
+function stayLoggedIn() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('logoutWarningModal'));
+    modal.hide();
+    clearInterval(countdownInterval); // หยุดนับถอยหลัง
+    resetLogoutTimer(); // เริ่มนับ 50 วินาทีใหม่
+}
+
+// ผูก Event ให้ Reset เวลาใหม่ทุกครั้งที่มีการขยับหรือแตะจอ
+document.addEventListener('mousemove', resetLogoutTimer);
+document.addEventListener('keypress', resetLogoutTimer);
+document.addEventListener('scroll', resetLogoutTimer);
+document.addEventListener('touchstart', resetLogoutTimer);
+
+// เริ่มนับครั้งแรก
+resetLogoutTimer();
+
+// ── ฟังก์ชันแปลงเวลาแบบ Lazy Formatting (พิมพ์ 830 -> แปลงเป็น 08:30) ──
+function smartParseTime(el) {
+  let val = el.value.trim();
+  if (!val || val.includes(':')) return;
+
+  let num = val.replace(/\D/g, '');
+  if (num.length === 0) return;
+
+  let h = "00", m = "00";
+  if (num.length <= 2) {
+    h = num.padStart(2, '0');
+  } else if (num.length === 3) {
+    h = "0" + num.substring(0, 1);
+    m = num.substring(1, 3);
+  } else {
+    h = num.substring(0, 2);
+    m = num.substring(2, 4);
+  }
+
+  if (parseInt(h, 10) > 23) h = "23";
+  if (parseInt(m, 10) > 59) m = "59";
+
+  el.value = `${h}:${m}`;
+}
+
+window.showFullReport=showFullReport;
+window.printOfficialReport=printOfficialReport;
+window.closeMonthUI=closeMonthUI;
+window.onSheetChange=onSheetChange;
+window.onYearChange=onYearChange;
+window.showCrossYearReport=showCrossYearReport;
+window.filterCrossYear=filterCrossYear;
+</script>
+
+<div class="modal fade" id="logoutWarningModal" data-bs-backdrop="static" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-body text-center p-4">
+        <i class="bi bi-clock-history text-danger" style="font-size: 3rem;"></i>
+        <h5 class="fw-black mt-3">ระบบกำลังจะออกจากระบบ</h5>
+        <p class="text-muted">เนื่องจากไม่มีการใช้งานเกิน 10 นาที</p>
+        <div class="display-4 fw-black text-danger my-3" id="logoutTimerDisplay">10</div>
+        <button class="btn btn-primary rounded-pill w-100 fw-bold" onclick="stayLoggedIn()">ใช้งานต่อ</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
